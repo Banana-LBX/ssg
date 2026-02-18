@@ -1,13 +1,16 @@
 #ifndef SSG_H
 #define SSG_H
 
-
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
 
 typedef struct {
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
 } Color;
 
 typedef struct {
@@ -43,10 +46,24 @@ static inline int ssg_triangle_edge(int x0, int y0, int x1, int y1, int x, int y
     return (x - x0)*(y1 - y0) - (y - y0)*(x1 - x0);
 }
 
+static inline Color ssg_blend(Color src, Color dst) {
+    float alpha = src.a / 255.0f;
+    float inv_alpha = 1.0f - alpha;
+
+    Color out;
+    out.r = (uint8_t)(src.r * alpha + dst.r * inv_alpha);
+    out.g = (uint8_t)(src.g * alpha + dst.g * inv_alpha);
+    out.b = (uint8_t)(src.b * alpha + dst.b * inv_alpha);
+    out.a = (uint8_t)(src.a * alpha + dst.a * inv_alpha);
+
+    return out;
+}
+
 static inline void ssg_fill(SSG_Canvas canvas, Color color) {
     for(size_t y = 0; y < canvas.height; y++) {
         for(size_t x = 0; x < canvas.width; x++) {
-            SSG_PIXEL(canvas, x, y) = color;
+            Color dst = SSG_PIXEL(canvas, x, y);
+            SSG_PIXEL(canvas, x, y) = ssg_blend(color, dst);
         }
     }
 }
@@ -61,7 +78,8 @@ static inline void ssg_fill_rect(SSG_Canvas canvas, int x, int y, size_t width, 
         if(py >= 0 && py < canvas.height) {
             for(int px = start_x; px < end_x; px++) {
                 if(px >= 0 && px < canvas.width) {
-                    SSG_PIXEL(canvas, px, py) = color;
+                    Color dst = SSG_PIXEL(canvas, px, py);
+                    SSG_PIXEL(canvas, px, py) = ssg_blend(color, dst);
                 }
             }
         }
@@ -81,7 +99,8 @@ static inline void ssg_fill_circle(SSG_Canvas canvas, int cx, int cy, int r, Col
                     int dx = x - cx;
                     int dy = y - cy;
                     if(dx*dx + dy*dy <= r*r) {
-                        SSG_PIXEL(canvas, x, y) = color;
+                        Color dst = SSG_PIXEL(canvas, x, y);
+                        SSG_PIXEL(canvas, x, y) = ssg_blend(color, dst);
                     }
                 }
             }
@@ -102,7 +121,8 @@ static inline void ssg_draw_line(SSG_Canvas canvas, int x1, int y1, int x2, int 
     while (1) {
         if (x1 >= 0 && x1 < (int)canvas.width &&
             y1 >= 0 && y1 < (int)canvas.height) {
-            SSG_PIXEL(canvas, x1, y1) = color;
+                Color dst = SSG_PIXEL(canvas, x1, y1);
+                SSG_PIXEL(canvas, x1, y1) = ssg_blend(color, dst);
         }
 
         if (x1 == x2 && y1 == y2)
@@ -150,7 +170,8 @@ void ssg_fill_triangle(SSG_Canvas canvas, int x1, int y1, int x2, int y2, int x3
 
                     if ((w1 >= 0 && w2 >= 0 && w3 >= 0) ||
                         (w1 <= 0 && w2 <= 0 && w3 <= 0)) {
-                        SSG_PIXEL(canvas, x, y) = color;
+                        Color dst = SSG_PIXEL(canvas, x, y);
+                        SSG_PIXEL(canvas, x, y) = ssg_blend(color, dst);
                     }
                 }
             }
@@ -166,7 +187,7 @@ static inline int ssg_save_to_ppm(SSG_Canvas canvas, const char *file_path) {
 
     for(size_t i = 0; i < canvas.width * canvas.height; i++) {
         Color pixel = canvas.pixels[i];
-        uint8_t bytes[3] = {pixel.red, pixel.green, pixel.blue};
+        uint8_t bytes[3] = {pixel.r, pixel.g, pixel.b};
         fwrite(bytes, sizeof(bytes), 1, f);
     }
 

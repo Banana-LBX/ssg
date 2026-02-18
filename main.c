@@ -6,8 +6,8 @@
 
 #include "ssg.h"
 
-#define BACKGROUND (Color){20, 20, 20}
-#define FOREGROUND (Color){254, 0, 254}
+#define BACKGROUND (Color){20, 20, 20, 255}
+#define FOREGROUND (Color){254, 0, 254, 255}
 
 const size_t width = 900;
 const size_t height = 900;
@@ -29,7 +29,7 @@ bool checker_board(size_t cell_size) {
         }
     }
 
-    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 3, canvas.pixels, canvas.width * sizeof(Color))) {
+    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 4, canvas.pixels, canvas.width * sizeof(Color))) {
         fprintf(stderr, "ERROR: could not write output.png\n");
         return false;
     }
@@ -53,7 +53,7 @@ bool random_circles(size_t amount) {
         ssg_fill_circle(canvas, x, y, r, FOREGROUND);
     }
 
-    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 3, canvas.pixels, canvas.width * sizeof(Color))) {
+    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 4, canvas.pixels, canvas.width * sizeof(Color))) {
         fprintf(stderr, "ERROR: could not write output.png\n");
         return false;
     }
@@ -79,7 +79,7 @@ bool circles_gradient(size_t rows, size_t cols, size_t cell_size, float start, f
         }
     }
 
-    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 3, canvas.pixels, canvas.width * sizeof(Color))) {
+    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 4, canvas.pixels, canvas.width * sizeof(Color))) {
         fprintf(stderr, "ERROR: could not write output.png\n");
         return false;
     }
@@ -88,13 +88,16 @@ bool circles_gradient(size_t rows, size_t cols, size_t cell_size, float start, f
     return true;
 }
 
-bool triangle(void) {
+bool transparency(void) {
     SSG_Canvas canvas = ssg_create_canvas(width, height);
     if(!canvas.pixels) return false;
 
-    ssg_fill_triangle(canvas, 400, 200, 200, 600, 600, 600, FOREGROUND);
+    ssg_fill(canvas, BACKGROUND);
+    ssg_fill_triangle(canvas, 400, 200, 200, 600, 600, 600, (Color){254, 0, 254, 255});
+    ssg_fill_circle(canvas, 300, 300, 100, (Color){0, 220, 10, 100});
+    ssg_fill_rect(canvas, 500, 500, 150, 150, (Color) {0, 10, 220, 50});
 
-    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 3, canvas.pixels, canvas.width * sizeof(Color))) {
+    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 4, canvas.pixels, canvas.width * sizeof(Color))) {
         fprintf(stderr, "ERROR: could not write output.png\n");
         return false;
     }
@@ -107,7 +110,7 @@ int main(void) {
     // if(!checker_board(100)) return -1;
     // if(!random_circles(10)) return -1;
     // if(!circles_gradient(10, 10, 100, 10, 80)) return -1;
-    // if(!triangle()) return -1;
+    if(!transparency()) return -1;
 
     return 0;
 }
