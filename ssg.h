@@ -1,8 +1,6 @@
 #ifndef SSG_H
 #define SSG_H
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
 
 #include <stdint.h>
 
@@ -174,30 +172,6 @@ static inline int ssg_save_to_ppm(SSG_Canvas canvas, const char *file_path) {
 
     fclose(f);
     return 0;
-}
-
-// requires stb_image_write
-static inline int ssg_save_to_png(SSG_Canvas canvas, const char *file_path) {
-    uint8_t *data = malloc(canvas.width * canvas.height * 3);
-    if (!data) return 1;
-
-    for (size_t i = 0; i < canvas.width * canvas.height; i++) {
-        data[i*3 + 0] = canvas.pixels[i].red;
-        data[i*3 + 1] = canvas.pixels[i].green;
-        data[i*3 + 2] = canvas.pixels[i].blue;
-    }
-
-    int result = stbi_write_png(
-        file_path,
-        canvas.width,
-        canvas.height,
-        3,
-        data,
-        canvas.width * 3
-    );
-
-    free(data);
-    return result ? 0 : 1;
 }
 
 static inline SSG_Canvas ssg_create_canvas(size_t width, size_t height) {

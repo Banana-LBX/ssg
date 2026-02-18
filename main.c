@@ -1,5 +1,9 @@
 #include <time.h>
 #include <stdbool.h>
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 #include "ssg.h"
 
 #define BACKGROUND (Color){20, 20, 20}
@@ -25,7 +29,10 @@ bool checker_board(size_t cell_size) {
         }
     }
 
-    ssg_save_to_png(canvas, "outputs/output.png");
+    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 3, canvas.pixels, canvas.width * sizeof(Color))) {
+        fprintf(stderr, "ERROR: could not write output.png\n");
+        return false;
+    }
     ssg_free_canvas(canvas);
 
     return true;
@@ -46,7 +53,10 @@ bool random_circles(size_t amount) {
         ssg_fill_circle(canvas, x, y, r, FOREGROUND);
     }
 
-    ssg_save_to_png(canvas, "outputs/output.png");
+    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 3, canvas.pixels, canvas.width * sizeof(Color))) {
+        fprintf(stderr, "ERROR: could not write output.png\n");
+        return false;
+    }
     ssg_free_canvas(canvas);
 
     return true;
@@ -69,7 +79,10 @@ bool circles_gradient(size_t rows, size_t cols, size_t cell_size, float start, f
         }
     }
 
-    ssg_save_to_png(canvas, "outputs/output.png");
+    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 3, canvas.pixels, canvas.width * sizeof(Color))) {
+        fprintf(stderr, "ERROR: could not write output.png\n");
+        return false;
+    }
     ssg_free_canvas(canvas);
 
     return true;
@@ -79,9 +92,12 @@ bool triangle(void) {
     SSG_Canvas canvas = ssg_create_canvas(width, height);
     if(!canvas.pixels) return false;
 
-    ssg_fill_triangle(canvas, 400, 200, 600, 600, 0, 600, FOREGROUND);
+    ssg_fill_triangle(canvas, 400, 200, 200, 600, 600, 600, FOREGROUND);
 
-    ssg_save_to_png(canvas, "outputs/output.png");
+    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 3, canvas.pixels, canvas.width * sizeof(Color))) {
+        fprintf(stderr, "ERROR: could not write output.png\n");
+        return false;
+    }
     ssg_free_canvas(canvas);
 
     return true;
