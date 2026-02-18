@@ -74,10 +74,23 @@ bool circles_gradient(size_t rows, size_t cols, size_t cell_size, float start, f
     return true;
 }
 
+bool triangle(void) {
+    SSG_Canvas canvas = ssg_create_canvas(width, height);
+    if(!canvas.pixels) return false;
+
+    ssg_fill_triangle(canvas, 400, 200, 600, 600, 0, 600, FOREGROUND);
+
+    ssg_save_to_png(canvas, "outputs/output.png");
+    ssg_free_canvas(canvas);
+
+    return true;
+}
+
 int main(void) {
     // if(!checker_board(100)) return -1;
     // if(!random_circles(10)) return -1;
     // if(!circles_gradient(10, 10, 100, 10, 80)) return -1;
+    // if(!triangle()) return -1;
 
     return 0;
 }
