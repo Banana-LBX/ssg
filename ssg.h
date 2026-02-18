@@ -4,12 +4,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-#include <stdio.h>
 #include <stdint.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <math.h>
-#include <errno.h>
 
 typedef struct {
     uint8_t red;
@@ -106,7 +101,7 @@ static inline void ssg_draw_line(SSG_Canvas canvas, int x1, int y1, int x2, int 
     int err = dx - dy;
 
     // Bresenhams line algorithm
-    while (true) {
+    while (1) {
         if (x1 >= 0 && x1 < (int)canvas.width &&
             y1 >= 0 && y1 < (int)canvas.height) {
             SSG_PIXEL(canvas, x1, y1) = color;

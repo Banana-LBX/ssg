@@ -1,4 +1,5 @@
 #include <time.h>
+#include <stdbool.h>
 #include "ssg.h"
 
 #define BACKGROUND (Color){20, 20, 20}
