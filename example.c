@@ -4,6 +4,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+#define SSG_IMPLEMENTATION
 #include "ssg.h"
 
 #define BACKGROUND (Color){20, 20, 20, 255}
@@ -110,7 +111,7 @@ int main(void) {
     // if(!checker_board(100)) return -1;
     // if(!random_circles(10)) return -1;
     // if(!circles_gradient(10, 10, 100, 10, 80)) return -1;
-    if(!transparency()) return -1;
+    // if(!transparency()) return -1;
 
     return 0;
 }
