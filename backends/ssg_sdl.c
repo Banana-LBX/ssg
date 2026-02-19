@@ -10,7 +10,7 @@ static int width;
 static int height;
 static int running = 1;
 
-int ssg_init(SSG_Canvas canvas, const char *title) {
+int ssg_window_init(SSG_Canvas canvas, const char *title) {
     width = canvas.width;
     height = canvas.height;
 
@@ -53,18 +53,18 @@ int ssg_init(SSG_Canvas canvas, const char *title) {
     return 1;
 }
 
-void ssg_shutdown(void) {
+void ssg_window_shutdown(void) {
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
 
-int ssg_running(void) {
+int ssg_window_running(void) {
     return running;
 }
 
-void ssg_begin_frame(void) {
+void ssg_window_begin_frame(void) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT)
@@ -72,7 +72,7 @@ void ssg_begin_frame(void) {
     }
 }
 
-void ssg_end_frame(SSG_Canvas canvas) {
+void ssg_window_end_frame(SSG_Canvas canvas) {
     SDL_UpdateTexture(texture, NULL,
                       canvas.pixels,
                       width * sizeof(Color));

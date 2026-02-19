@@ -25,11 +25,7 @@ void ssg_fill(SSG_Canvas canvas, Color color);
 void ssg_fill_rect(SSG_Canvas canvas, int x, int y, size_t width, size_t height, Color color);
 void ssg_fill_circle(SSG_Canvas canvas, int cx, int cy, int r, Color color);
 void ssg_draw_line(SSG_Canvas canvas, int x1, int y1, int x2, int y2, Color color);
-void ssg_fill_triangle(SSG_Canvas canvas,
-                       int x1, int y1,
-                       int x2, int y2,
-                       int x3, int y3,
-                       Color color);
+void ssg_fill_triangle(SSG_Canvas canvas, int x1, int y1, int x2, int y2, int x3, int y3, Color color);
 
 int ssg_save_to_ppm(SSG_Canvas canvas, const char *file_path);
 
@@ -100,9 +96,11 @@ void ssg_draw_pixel(SSG_Canvas canvas, int x, int y, Color src) {
 
     uint8_t inv = 255 - src.a;
 
+    // blend colors according to alpha
     dst->r = (uint8_t)((src.r * src.a + dst->r * inv) / 255);
     dst->g = (uint8_t)((src.g * src.a + dst->g * inv) / 255);
     dst->b = (uint8_t)((src.b * src.a + dst->b * inv) / 255);
+    // set back to opaque
     dst->a = 255;
 }
 
@@ -149,6 +147,7 @@ void ssg_fill_circle(SSG_Canvas canvas, int cx, int cy, int r, Color color) {
 }
 
 void ssg_draw_line(SSG_Canvas canvas, int x1, int y1, int x2, int y2, Color color) {
+    // Bresenham line drawing algorithm
     int dx = abs(x2 - x1);
     int dy = abs(y2 - y1);
 
@@ -169,12 +168,7 @@ void ssg_draw_line(SSG_Canvas canvas, int x1, int y1, int x2, int y2, Color colo
     }
 }
 
-void ssg_fill_triangle(SSG_Canvas canvas,
-                       int x1, int y1,
-                       int x2, int y2,
-                       int x3, int y3,
-                       Color color)
-{
+void ssg_fill_triangle(SSG_Canvas canvas, int x1, int y1, int x2, int y2, int x3, int y3, Color color) {
     int coords_x[3] = {x1, x2, x3};
     int coords_y[3] = {y1, y2, y3};
 

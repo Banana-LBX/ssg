@@ -5,11 +5,12 @@
 extern "C" {
 #endif
 
-int  ssg_init(SSG_Canvas canvas, const char *title);
-void ssg_shutdown(void);
-int  ssg_running(void);
-void ssg_begin_frame(void);
-void ssg_end_frame(SSG_Canvas canvas);
+// SDL Backend
+int  ssg_window_init(SSG_Canvas canvas, const char *title);
+void ssg_window_shutdown(void);
+int  ssg_window_running(void);
+void ssg_window_begin_frame(void);
+void ssg_window_end_frame(SSG_Canvas canvas);
 
 #ifdef __cplusplus
 }
