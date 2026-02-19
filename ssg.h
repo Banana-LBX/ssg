@@ -2,7 +2,6 @@
 #define SSG_H
 
 #include <stdint.h>
-#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,8 +16,6 @@ typedef struct {
     size_t width;
     size_t height;
 } SSG_Canvas;
-
-/* ===== API ===== */
 
 SSG_Canvas ssg_create_canvas(size_t width, size_t height);
 void ssg_free_canvas(SSG_Canvas canvas);

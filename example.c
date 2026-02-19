@@ -108,7 +108,7 @@ bool transparency(void) {
 }
 
 int main(void) {
-    // if(!checker_board(100)) return -1;
+    if(!checker_board(100)) return -1;
     // if(!random_circles(10)) return -1;
     // if(!circles_gradient(10, 10, 100, 10, 80)) return -1;
     // if(!transparency()) return -1;

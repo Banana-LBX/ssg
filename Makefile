@@ -1,7 +1,7 @@
-# Makefile for SDL3 example
+# Current makefile that includes backend implementations
 CC = gcc
 TARGET = app
-SRC = sdl3_example.c
+SRC = main.c backends/ssg_sdl.c
 
 CFLAGS = $(shell pkg-config --cflags sdl3)
 LDFLAGS = $(shell pkg-config --libs sdl3)
