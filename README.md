@@ -7,6 +7,7 @@ This library doesnt have any dependencies besides the C standard library.
 #define SSG_IMPLEMENTATION
 #include "ssg.h"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
 #define BACKGROUND (Color){20, 20, 20, 255}
