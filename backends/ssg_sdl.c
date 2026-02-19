@@ -33,6 +33,7 @@ int ssg_window_init(SSG_Canvas canvas, const char *title) {
         SDL_Quit();
         return 0;
     }
+    SDL_SetRenderVSync(renderer, 1);
 
     texture = SDL_CreateTexture(
         renderer,
@@ -62,6 +63,22 @@ void ssg_window_shutdown(void) {
 
 int ssg_window_running(void) {
     return running;
+}
+
+float ssg_window_get_dt(void) {
+    static Uint64 last_counter = 0;
+    Uint64 current_counter = SDL_GetPerformanceCounter();
+
+    if (last_counter == 0) {
+        last_counter = current_counter;
+        return 0.0f; // first frame
+    }
+
+    Uint64 frequency = SDL_GetPerformanceFrequency();
+    float dt = (float)(current_counter - last_counter) / (float)frequency;
+    last_counter = current_counter;
+
+    return dt;
 }
 
 void ssg_window_begin_frame(void) {

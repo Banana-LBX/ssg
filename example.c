@@ -25,7 +25,7 @@ bool checker_board(size_t cell_size) {
     for(size_t y = 0; y < height/cell_height; y++) {
         for(size_t x = 0; x < width/cell_width; x++) {
             if((x+y) % 2 == 0) {
-                ssg_fill_rect(canvas, x*100, y*100, cell_width, cell_height, FOREGROUND);
+                ssg_rect(canvas, x*100, y*100, cell_width, cell_height, FOREGROUND);
             }
         }
     }
@@ -51,7 +51,7 @@ bool random_circles(size_t amount) {
         int x = ((rand() % 10) * 100) + 10;
         int y = ((rand() % 10) * 100) + 10;
         int r = ((rand() % 10) * 10) + 10;
-        ssg_fill_circle(canvas, x, y, r, FOREGROUND);
+        ssg_circle(canvas, x, y, r, FOREGROUND);
     }
 
     if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 4, canvas.pixels, canvas.width * sizeof(Color))) {
@@ -76,7 +76,7 @@ bool circles_gradient(size_t rows, size_t cols, size_t cell_size, float start, f
             size_t radius = cell_size;
             if(radius > cell_size) radius = cell_size;
 
-            ssg_fill_circle(canvas, x*cell_size + cell_size/2, y*cell_size + cell_size/2, ssg_lerpf(start, end, t), FOREGROUND);
+            ssg_circle(canvas, x*cell_size + cell_size/2, y*cell_size + cell_size/2, ssg_lerpf(start, end, t), FOREGROUND);
         }
     }
 
@@ -94,9 +94,9 @@ bool transparency(void) {
     if(!canvas.pixels) return false;
 
     ssg_fill(canvas, BACKGROUND);
-    ssg_fill_triangle(canvas, 400, 200, 200, 600, 600, 600, (Color){254, 0, 254, 255});
-    ssg_fill_circle(canvas, 300, 300, 100, (Color){0, 220, 10, 100});
-    ssg_fill_rect(canvas, 500, 500, 150, 150, (Color) {0, 10, 220, 50});
+    ssg_triangle(canvas, 400, 200, 200, 600, 600, 600, (Color){254, 0, 254, 255});
+    ssg_circle(canvas, 300, 300, 100, (Color){0, 220, 10, 100});
+    ssg_rect(canvas, 500, 500, 150, 150, (Color) {0, 10, 220, 50});
 
     if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 4, canvas.pixels, canvas.width * sizeof(Color))) {
         fprintf(stderr, "ERROR: could not write output.png\n");
