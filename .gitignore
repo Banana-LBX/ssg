@@ -1,7 +1,7 @@
 stb_image_write.h
 app.exe
-example.exe
-test.exe
-wave_animation.exe
+wave.exe
+cube.exe
+circle_cube.exe
 test.c
 TODO.txt
