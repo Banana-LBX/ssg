@@ -7,15 +7,17 @@
 #define FOREGROUND (Color){254, 0, 254, 255}
 #define BACKGROUND (Color){20, 20, 20, 255}
 
-const int width = 900;
-const int height = 900;
+#define WIDTH 900
+#define HEIGHT 900
 
-const int rows = 9;
-const int cols = 9;
-const int cell_size = 100;
+#define RADIUS 5
+#define GRID_COUNT 10
+#define GRID_GAP 0.5/GRID_COUNT
+#define GRID_SIZE (GRID_COUNT-1)*GRID_GAP
+#define Z_START 0.5
 
 int main(void) {
-    SSG_Canvas canvas = ssg_create_canvas(width, height);
+    SSG_Canvas canvas = ssg_create_canvas(WIDTH, HEIGHT);
 
     if (!ssg_window_init(canvas, "SSG")) {
         fprintf(stderr, "Failed to initialize SDL backend!\n");
@@ -24,39 +26,52 @@ int main(void) {
     }
 
     float time = 0.0f;
-
+    float angle = 0;
+    float dt;
     while (ssg_window_running())
     {
         ssg_window_begin_frame();
-
-        float dt = ssg_window_get_dt();
-        time += dt;
+        
+        dt = ssg_window_get_dt();
+        angle += 0.5*PI*dt;
 
         ssg_fill(canvas, BACKGROUND);
 
-        float min_radius = 10.0f;
-        float max_radius = 50.0f;
+        for(int iy = 0; iy < GRID_COUNT; iy++) {
+            for(int ix = 0; ix < GRID_COUNT; ix++) {
+                for(int iz = 0; iz < GRID_COUNT; iz++) {
+                    float x = ix*GRID_GAP-GRID_SIZE/2;
+                    float y = iy*GRID_GAP-GRID_SIZE/2;
+                    float z = Z_START+iz*GRID_GAP;
 
-        for (int y = 0; y < rows; y++) {
-            for (int x = 0; x < cols; x++) {
-                float u = (float)x / cols;
-                float v = (float)y / rows;
+                    // Grid center, rotate shape around y axis
+                    float cx = 0.0f;
+                    float cz = Z_START+GRID_SIZE/2;
 
-                // Diagonal coordinate (0 → ~1)
-                float d = (u + v) * 0.5f;
-                // Moving diagonal wave
-                float wave = sinf(d * 6.0f - time * 2.0f);
-                // Normalize from [-1,1] → [0,1]
-                float t = (wave + 1.0f) * 0.5f;
+                    float dx = x-cx;
+                    float dz = z-cz;
 
-                float radius = min_radius + (max_radius - min_radius) * t;
+                    float cosA = cosf(angle);
+                    float sinA = sinf(angle);
 
-                // ssg_circle_outline(canvas, x * cell_size + cell_size / 2, y * cell_size + cell_size / 2, radius, FOREGROUND);
-                int center_x = x*cell_size+cell_size/2;
-                int center_y = y*cell_size+cell_size/2;
-                int xs[4] = {center_x-radius, center_x+radius, center_x+radius, center_x-radius};
-                int ys[4] = {center_y-radius, center_y-radius, center_y+radius, center_y+radius};
-                ssg_polygon_outline(canvas, xs, ys, 4, FOREGROUND);
+                    float rx = dx * cosA + dz * sinA;
+                    float rz = -dx * sinA + dz * cosA;
+
+                    x = rx + cx;
+                    z = rz + cz;
+
+                    x /= z;
+                    y /= z;
+
+                    uint32_t r = ix*255/GRID_COUNT;
+                    uint32_t g = iy*255/GRID_COUNT;
+                    uint32_t b = iz*255/GRID_COUNT;
+
+                    Color color = {
+                        r, g, b, 255
+                    };
+                    ssg_circle(canvas, (x+1)/2*WIDTH, (y+1)/2*HEIGHT, RADIUS, color);
+                }
             }
         }
 
