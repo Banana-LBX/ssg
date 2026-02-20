@@ -1,11 +1,9 @@
 #include <time.h>
 #include <stdbool.h>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
-
 #define SSG_IMPLEMENTATION
 #include "ssg.h"
+#include "ssg_backend.h"
 
 #define BACKGROUND (Color){20, 20, 20, 255}
 #define FOREGROUND (Color){254, 0, 254, 255}
@@ -25,15 +23,12 @@ bool checker_board(size_t cell_size) {
     for(size_t y = 0; y < height/cell_height; y++) {
         for(size_t x = 0; x < width/cell_width; x++) {
             if((x+y) % 2 == 0) {
-                ssg_rect(canvas, x*100, y*100, cell_width, cell_height, FOREGROUND);
+                ssg_rect(canvas, x*cell_height, y*cell_width, cell_width, cell_height, FOREGROUND);
             }
         }
     }
 
-    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 4, canvas.pixels, canvas.width * sizeof(Color))) {
-        fprintf(stderr, "ERROR: could not write output.png\n");
-        return false;
-    }
+    ssg_save_to_png(canvas, "outputs/output.png");
     ssg_free_canvas(canvas);
 
     return true;
@@ -54,10 +49,7 @@ bool random_circles(size_t amount) {
         ssg_circle(canvas, x, y, r, FOREGROUND);
     }
 
-    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 4, canvas.pixels, canvas.width * sizeof(Color))) {
-        fprintf(stderr, "ERROR: could not write output.png\n");
-        return false;
-    }
+    ssg_save_to_png(canvas, "outputs/output.png");
     ssg_free_canvas(canvas);
 
     return true;
@@ -80,10 +72,7 @@ bool circles_gradient(size_t rows, size_t cols, size_t cell_size, float start, f
         }
     }
 
-    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 4, canvas.pixels, canvas.width * sizeof(Color))) {
-        fprintf(stderr, "ERROR: could not write output.png\n");
-        return false;
-    }
+    ssg_save_to_png(canvas, "outputs/output.png");
     ssg_free_canvas(canvas);
 
     return true;
@@ -98,10 +87,7 @@ bool transparency(void) {
     ssg_circle(canvas, 300, 300, 100, (Color){0, 220, 10, 100});
     ssg_rect(canvas, 500, 500, 150, 150, (Color) {0, 10, 220, 50});
 
-    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 4, canvas.pixels, canvas.width * sizeof(Color))) {
-        fprintf(stderr, "ERROR: could not write output.png\n");
-        return false;
-    }
+    ssg_save_to_png(canvas, "outputs/output.png");
     ssg_free_canvas(canvas);
 
     return true;

@@ -31,15 +31,22 @@ typedef struct {
 SSG_Canvas ssg_create_canvas(size_t width, size_t height);
 void ssg_free_canvas(SSG_Canvas canvas);
 
+
+bool ssg_bounding_box(SSG_Canvas canvas, int x, int y, int w, int h, SSG_Bounding_Box *box);
+void ssg_rotate_points(int *xs, int *ys, int count, float cx, float cy, float angle);
+
 void ssg_draw_pixel(SSG_Canvas canvas, int x, int y, Color color);
 void ssg_fill(SSG_Canvas canvas, Color color);
-bool ssg_bounding_box(SSG_Canvas canvas, int x, int y, int w, int h, SSG_Bounding_Box *box);
-void ssg_rect(SSG_Canvas canvas, int x, int y, int width, int height, Color color);
-void ssg_circle(SSG_Canvas canvas, int cx, int cy, int r, Color color);
-void ssg_line(SSG_Canvas canvas, int x1, int y1, int x2, int y2, Color color);
-void ssg_triangle(SSG_Canvas canvas, int x1, int y1, int x2, int y2, int x3, int y3, Color color);
 
-int ssg_save_to_ppm(SSG_Canvas canvas, const char *file_path);
+void ssg_triangle(SSG_Canvas canvas, int x1, int y1, int x2, int y2, int x3, int y3, Color color);
+void ssg_polygon(SSG_Canvas canvas, int *xs, int *ys, int count, Color color);
+void ssg_polygon_outline(SSG_Canvas canvas, int *xs, int *ys, int count, Color color);
+void ssg_polygon_get_center(int *xs, int *ys, int count, int *cx, int *cy);
+void ssg_rect(SSG_Canvas canvas, int x, int y, int width, int height, Color color);
+void ssg_rect_outline(SSG_Canvas canvas, int x, int y, int width, int height, Color color);
+void ssg_circle(SSG_Canvas canvas, int cx, int cy, int r, Color color);
+void ssg_circle_outline(SSG_Canvas canvas, int cx, int cy, int r, Color color);
+void ssg_line(SSG_Canvas canvas, int x1, int y1, int x2, int y2, Color color);
 
 #ifdef __cplusplus
 }
@@ -89,17 +96,56 @@ void ssg_free_canvas(SSG_Canvas canvas) {
     free(canvas.pixels);
 }
 
+bool ssg_bounding_box(SSG_Canvas canvas, int x, int y, int w, int h, SSG_Bounding_Box *box) {
+    box->x1 = x;
+    box->y1 = y;
+
+    // Turn the box into 2 points
+    box->x2 = box->x1 + SIGN(int, w)*(ABS(int, w));
+    if (box->x1 > box->x2) SWAP(int, box->x1, box->x2);
+    box->y2 = box->y1 + SIGN(int, h)*(ABS(int, h));
+    if (box->y1 > box->y2) SWAP(int, box->y1, box->y2);
+
+    // Remove out of bounds
+    if (box->x1 >= (int)canvas.width) return false;
+    if (box->x2 < 0) return false;
+    if (box->y1 >= (int)canvas.height) return false;
+    if (box->y2 < 0) return false;
+
+    // Clamp box inside boundaries
+    if (box->x1 < 0) box->x1 = 0;
+    if (box->x2 >= (int)canvas.width) box->x2 = (int)canvas.width - 1;
+    if (box->y1 < 0) box->y1 = 0;
+    if (box->y2 >= (int)canvas.height) box->y2 = (int)canvas.height - 1;
+
+    return true;
+}
+
+void ssg_rotate_points(int *xs, int *ys, int count, float cx, float cy, float angle) {
+    float cosA = cosf(angle);
+    float sinA = sinf(angle);
+
+    for(int i = 0; i < count; i++) {
+        float dx = xs[i] - cx;
+        float dy = ys[i] - cy;
+
+        float rx = dx * cosA - dy * sinA;
+        float ry = dx * sinA + dy * cosA;
+
+        xs[i] = (int)(rx + cx);
+        ys[i] = (int)(ry + cy);
+    }
+}
+
 void ssg_draw_pixel(SSG_Canvas canvas, int x, int y, Color src) {
     if(x < 0 || y < 0 || x >= (int)canvas.width || y >= (int)canvas.height)
         return;
 
     Color *dst = &canvas.pixels[y * canvas.width + x];
-
     if(src.a == 255) {
         *dst = src;
         return;
     }
-
     if(src.a == 0)
         return;
 
@@ -118,48 +164,6 @@ void ssg_fill(SSG_Canvas canvas, Color color) {
         for(size_t x = 0; x < canvas.width; x++) {
             ssg_draw_pixel(canvas, x, y, color);
         }
-    }
-}
-
-bool ssg_bounding_box(SSG_Canvas canvas, int x, int y, int w, int h, SSG_Bounding_Box *box) {
-    box->x1 = x;
-    box->y1 = y;
-
-    // Turn the box into 2 points
-    box->x2 = box->x1 + SIGN(int, w)*(ABS(int, w) - 1);
-    if (box->x1 > box->x2) SWAP(int, box->x1, box->x2);
-    box->y2 = box->y1 + SIGN(int, h)*(ABS(int, h) - 1);
-    if (box->y1 > box->y2) SWAP(int, box->y1, box->y2);
-
-    // Remove out of bounds
-    if (box->x1 >= (int)canvas.width) return false;
-    if (box->x2 < 0) return false;
-    if (box->y1 >= (int)canvas.height) return false;
-    if (box->y2 < 0) return false;
-
-    // Clamp box inside boundaries
-    if (box->x1 < 0) box->x1 = 0;
-    if (box->x2 >= (int)canvas.width) box->x2 = (int)canvas.width - 1;
-    if (box->y1 < 0) box->y1 = 0;
-    if (box->y2 >= (int)canvas.height) box->y2 = (int)canvas.height - 1;
-
-    return true;
-}
-
-void ssg_rotate_points(int *xs, int *ys, int count, float cx, float cy, float angle)
-{
-    float cosA = cosf(angle);
-    float sinA = sinf(angle);
-
-    for(int i = 0; i < count; i++) {
-        float dx = xs[i] - cx;
-        float dy = ys[i] - cy;
-
-        float rx = dx * cosA - dy * sinA;
-        float ry = dx * sinA + dy * cosA;
-
-        xs[i] = (int)(rx + cx);
-        ys[i] = (int)(ry + cy);
     }
 }
 
@@ -192,6 +196,7 @@ void ssg_triangle(SSG_Canvas canvas, int x1, int y1, int x2, int y2, int x3, int
 }
 
 void ssg_polygon(SSG_Canvas canvas, int *xs, int *ys, int count, Color color) {
+    if (count < 2) return;
     for(int i = 1; i < count - 1; i++) {
         ssg_triangle(canvas,
             xs[0], ys[0],
@@ -201,16 +206,80 @@ void ssg_polygon(SSG_Canvas canvas, int *xs, int *ys, int count, Color color) {
     }
 }
 
+void ssg_polygon_outline(SSG_Canvas canvas, int *xs, int *ys, int count, Color color) {
+    if (count < 2) return;
+    for (int i = 0; i < count; i++) {
+        int j = (i + 1) % count;  // wrap to first vertex
+        ssg_line(canvas,
+                 xs[i], ys[i],
+                 xs[j], ys[j],
+                 color);
+    }
+}
+
+void ssg_polygon_get_center(int *xs, int *ys, int count, int *cx, int *cy) {
+    float area = 0.0f;
+
+    for (int i = 0; i < count; i++) {
+        int j = (i + 1) % count;
+
+        float cross = xs[i] * ys[j] - xs[j] * ys[i];
+
+        area += cross;
+
+        *cx += (xs[i] + xs[j]) * cross;
+        *cy += (ys[i] + ys[j]) * cross;
+    }
+
+    area *= 0.5f;
+
+    *cx /= (6.0f * area);
+    *cy /= (6.0f * area);
+}
+
+void ssg_rect(SSG_Canvas canvas, int x, int y, int width, int height, Color color) {
+    int xs[4] = {x, x+width, x+width, x};
+    int ys[4] = {y, y, y+height, y+height};
+    ssg_polygon(canvas, xs, ys, 4, color);
+}
+
+void ssg_rect_outline(SSG_Canvas canvas, int x, int y, int width, int height, Color color) {
+    int xs[4] = {x, x+width, x+width, x};
+    int ys[4] = {y, y, y+height, y+height};
+    ssg_polygon_outline(canvas, xs, ys, 4, color);
+}
+
 void ssg_circle(SSG_Canvas canvas, int cx, int cy, int r, Color color) {
     int ax = cx - r;
     int ay = cy - r;
     SSG_Bounding_Box box = {0};
     if(!ssg_bounding_box(canvas, ax, ay, r*2, r*2, &box)) return;
-    for(int x = box.x1; x <= box.x2; x++) {
-        for(int y = box.y1; y <= box.y2; y++) {
+    for(int y = box.y1; y <= box.y2; y++) {
+        for(int x = box.x1; x <= box.x2; x++) {
             int dx = x - cx;
             int dy = y - cy;
-            if(dx*dx + dy*dy <= r*r)
+            int dist2 = dx*dx + dy*dy;
+            int r2 = r*r;
+            if(dist2 <= r2)
+                ssg_draw_pixel(canvas, x, y, color);
+            // if(dist2 >= r2 - r && dist2 <= r2 + r)
+            //     ssg_draw_pixel(canvas, x, y, color);
+        }
+    }
+}
+
+void ssg_circle_outline(SSG_Canvas canvas, int cx, int cy, int r, Color color) {
+    int ax = cx - r;
+    int ay = cy - r;
+    SSG_Bounding_Box box = {0};
+    if(!ssg_bounding_box(canvas, ax, ay, r*2, r*2, &box)) return;
+    for(int y = box.y1; y <= box.y2; y++) {
+        for(int x = box.x1; x <= box.x2; x++) {
+            int dx = x - cx;
+            int dy = y - cy;
+            int dist2 = dx*dx + dy*dy;
+            int r2 = r*r;
+            if(dist2 >= r2 - r && dist2 <= r2 + r)
                 ssg_draw_pixel(canvas, x, y, color);
         }
     }
@@ -236,22 +305,6 @@ void ssg_line(SSG_Canvas canvas, int x1, int y1, int x2, int y2, Color color) {
         if(e2 > -dy) { err -= dy; x1 += sx; }
         if(e2 < dx)  { err += dx; y1 += sy; }
     }
-}
-
-int ssg_save_to_ppm(SSG_Canvas canvas, const char *file_path) {
-    FILE *f = fopen(file_path, "wb");
-    if(!f) return errno;
-
-    fprintf(f, "P6\n%zu %zu\n255\n", canvas.width, canvas.height);
-
-    for(size_t i = 0; i < canvas.width * canvas.height; i++) {
-        Color pixel = canvas.pixels[i];
-        uint8_t bytes[3] = {pixel.r, pixel.g, pixel.b};
-        fwrite(bytes, sizeof(bytes), 1, f);
-    }
-
-    fclose(f);
-    return 0;
 }
 
 #endif // SSG_IMPLEMENTATION
