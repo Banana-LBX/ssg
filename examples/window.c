@@ -1,6 +1,8 @@
 // Example that creates a window and draws a circle
 #define SSG_IMPLEMENTATION
 #include "ssg.h"
+
+#define SSG_BACKEND_IMPLEMENTATION
 #include "ssg_backend.h"
 
 #define FOREGROUND (Color){254, 0, 254, 255}

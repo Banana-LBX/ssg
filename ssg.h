@@ -26,6 +26,258 @@ typedef struct {
     int x2, y2;
 } SSG_Bounding_Box;
 
+typedef struct {
+    size_t width;
+    size_t height;
+    const char *symbols;
+} SSG_Font;
+
+#define DEFAULT_FONT_HEIGHT 7
+#define DEFAULT_FONT_WIDTH 5
+static char ssg_default_font_symbols[128][DEFAULT_FONT_HEIGHT][DEFAULT_FONT_WIDTH] = {
+
+['a'] = {
+    {0,1,1,1,0},
+    {1,0,0,0,1},
+    {1,1,1,1,1},
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['b'] = {
+    {1,1,1,1,0},
+    {1,0,0,0,1},
+    {1,1,1,1,0},
+    {1,0,0,0,1},
+    {1,1,1,1,0},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['c'] = {
+    {0,1,1,1,1},
+    {1,0,0,0,0},
+    {1,0,0,0,0},
+    {1,0,0,0,0},
+    {0,1,1,1,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['d'] = {
+    {1,1,1,1,0},
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {1,1,1,1,0},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['e'] = {
+    {1,1,1,1,1},
+    {1,0,0,0,0},
+    {1,1,1,1,0},
+    {1,0,0,0,0},
+    {1,1,1,1,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['f'] = {
+    {1,1,1,1,1},
+    {1,0,0,0,0},
+    {1,1,1,1,0},
+    {1,0,0,0,0},
+    {1,0,0,0,0},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['g'] = {
+    {0,1,1,1,1},
+    {1,0,0,0,0},
+    {1,0,1,1,1},
+    {1,0,0,0,1},
+    {0,1,1,1,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['h'] = {
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {1,1,1,1,1},
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['i'] = {
+    {1,1,1,1,1},
+    {0,0,1,0,0},
+    {0,0,1,0,0},
+    {0,0,1,0,0},
+    {1,1,1,1,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['j'] = {
+    {0,0,0,1,1},
+    {0,0,0,0,1},
+    {0,0,0,0,1},
+    {1,0,0,0,1},
+    {0,1,1,1,0},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['k'] = {
+    {1,0,0,0,1},
+    {1,0,0,1,0},
+    {1,1,1,0,0},
+    {1,0,0,1,0},
+    {1,0,0,0,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['l'] = {
+    {1,0,0,0,0},
+    {1,0,0,0,0},
+    {1,0,0,0,0},
+    {1,0,0,0,0},
+    {1,1,1,1,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['m'] = {
+    {1,0,0,0,1},
+    {1,1,0,1,1},
+    {1,0,1,0,1},
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['n'] = {
+    {1,0,0,0,1},
+    {1,1,0,0,1},
+    {1,0,1,0,1},
+    {1,0,0,1,1},
+    {1,0,0,0,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['o'] = {
+    {0,1,1,1,0},
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {0,1,1,1,0},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['p'] = {
+    {1,1,1,1,0},
+    {1,0,0,0,1},
+    {1,1,1,1,0},
+    {1,0,0,0,0},
+    {1,0,0,0,0},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['q'] = {
+    {0,1,1,1,0},
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {1,0,0,1,1},
+    {0,1,1,1,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['r'] = {
+    {1,1,1,1,0},
+    {1,0,0,0,1},
+    {1,1,1,1,0},
+    {1,0,1,0,0},
+    {1,0,0,1,0},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['s'] = {
+    {0,1,1,1,1},
+    {1,0,0,0,0},
+    {0,1,1,1,0},
+    {0,0,0,0,1},
+    {1,1,1,1,0},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['t'] = {
+    {1,1,1,1,1},
+    {0,0,1,0,0},
+    {0,0,1,0,0},
+    {0,0,1,0,0},
+    {0,0,1,0,0},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['u'] = {
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {0,1,1,1,0},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['v'] = {
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {0,1,0,1,0},
+    {0,1,0,1,0},
+    {0,0,1,0,0},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['w'] = {
+    {1,0,0,0,1},
+    {1,0,0,0,1},
+    {1,0,1,0,1},
+    {1,1,0,1,1},
+    {1,0,0,0,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['x'] = {
+    {1,0,0,0,1},
+    {0,1,0,1,0},
+    {0,0,1,0,0},
+    {0,1,0,1,0},
+    {1,0,0,0,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['y'] = {
+    {1,0,0,0,1},
+    {0,1,0,1,0},
+    {0,0,1,0,0},
+    {0,0,1,0,0},
+    {0,0,1,0,0},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+['z'] = {
+    {1,1,1,1,1},
+    {0,0,0,1,0},
+    {0,0,1,0,0},
+    {0,1,0,0,0},
+    {1,1,1,1,1},
+    {0,0,0,0,0},
+    {0,0,0,0,0},
+},
+};
+
+static SSG_Font ssg_default_font = {
+    DEFAULT_FONT_WIDTH,
+    DEFAULT_FONT_HEIGHT,
+    &ssg_default_font_symbols[0][0][0]
+};
+
 SSG_Canvas ssg_create_canvas(size_t width, size_t height);
 void ssg_free_canvas(SSG_Canvas canvas);
 
@@ -47,6 +299,8 @@ void ssg_rect(SSG_Canvas canvas, int x, int y, int width, int height, Color colo
 void ssg_rect_outline(SSG_Canvas canvas, int x, int y, int width, int height, size_t thickness, Color color);
 void ssg_circle(SSG_Canvas canvas, int cx, int cy, int r, Color color);
 void ssg_circle_outline(SSG_Canvas canvas, int cx, int cy, int r, size_t thickness, Color color);
+
+void ssg_text(SSG_Canvas canvas, const char *text, int x0, int y0, SSG_Font font, size_t size, float letter_spacing, float word_spacing, Color color);
 
 #ifdef __cplusplus
 }
@@ -283,23 +537,47 @@ void ssg_polygon_outline(SSG_Canvas canvas, int *xs, int *ys, int count, size_t 
 }
 
 void ssg_polygon_get_center(int *xs, int *ys, int count, int *cx, int *cy) {
-    float area = 0.0f;
+    if(count < 3) {
+        *cx = 0;
+        *cy = 0;
+        return;
+    }
 
-    for (int i = 0; i < count; i++) {
+    float area = 0.0f;
+    float center_x = 0.0f;
+    float center_y = 0.0f;
+
+    for(int i = 0; i < count; i++) {
         int j = (i + 1) % count;
 
-        float cross = xs[i] * ys[j] - xs[j] * ys[i];
-
+        float cross = (float)xs[i] * ys[j] - (float)xs[j] * ys[i];
         area += cross;
-
-        *cx += (xs[i] + xs[j]) * cross;
-        *cy += (ys[i] + ys[j]) * cross;
+        center_x += (xs[i] + xs[j]) * cross;
+        center_y += (ys[i] + ys[j]) * cross;
     }
 
     area *= 0.5f;
 
-    *cx /= (6.0f * area);
-    *cy /= (6.0f * area);
+    // Degenerate polygon
+    if(area > -1e-6f && area < 1e-6f) {
+        long sum_x = 0;
+        long sum_y = 0;
+
+        for(int i = 0; i < count; i++) {
+            sum_x += xs[i];
+            sum_y += ys[i];
+        }
+
+        *cx = sum_x / count;
+        *cy = sum_y / count;
+        return;
+    }
+
+    center_x /= (6.0f * area);
+    center_y /= (6.0f * area);
+
+    *cx = (int)center_x;
+    *cy = (int)center_y;
 }
 
 void ssg_rect(SSG_Canvas canvas, int x, int y, int width, int height, Color color) {
@@ -355,6 +633,47 @@ void ssg_circle_outline(SSG_Canvas canvas, int cx, int cy, int r, size_t thickne
             if (dist2 <= outer2 && dist2 >= inner2)
                 ssg_draw_pixel(canvas, x, y, color);
         }
+    }
+}
+
+void ssg_text(SSG_Canvas canvas, const char *text, int tx, int ty, SSG_Font font, size_t size, float letter_spacing, float word_spacing, Color color) {
+    if(size == 0) return;
+
+    int cursor_x = tx;
+    int cursor_y = ty;
+
+    size_t text_len = strlen(text);
+
+    for(size_t i = 0; i < text_len; i++) {
+        char c = text[i];
+
+        if(c == '\n') {
+            cursor_x = tx;
+            cursor_y += (font.height) * size;
+            continue;
+        }
+
+        // word spacing
+        if(c == ' ') {
+            cursor_x += (size+word_spacing) * size;
+            continue;
+        }
+
+        const char *symbol = font.symbols + ((unsigned char)c * font.width * font.height);
+
+        for(int dy = 0; dy < (int)font.height; dy++) {
+            for(int dx = 0; dx < (int)font.width; dx++) {
+                if(symbol[dy * font.width + dx]) {
+                    int px = cursor_x + dx * size;
+                    int py = cursor_y + dy * size;
+
+                    ssg_rect(canvas, px, py, size, size, color);
+                }
+            }
+        }
+
+        // Move cursor to next character
+        cursor_x += (font.width + letter_spacing) * size;
     }
 }
 

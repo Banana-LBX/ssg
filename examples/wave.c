@@ -1,5 +1,7 @@
 #define SSG_IMPLEMENTATION
 #include "ssg.h"
+
+#define SSG_BACKEND_IMPLEMENTATION
 #include "ssg_backend.h"
 
 #define PI 3.14159265359

@@ -1,5 +1,7 @@
 #define SSG_IMPLEMENTATION
 #include "ssg.h"
+
+#define SSG_BACKEND_IMPLEMENTATION
 #include "ssg_backend.h"
 
 #define PI 3.14159265359
@@ -10,10 +12,11 @@
 #define WIDTH 900
 #define HEIGHT 900
 
+#define RADIUS 10
+#define GRID_COUNT 25
+#define GRID_GAP 0.3/GRID_COUNT
+#define GRID_SIZE (GRID_COUNT-1)*GRID_GAP
 #define Z_START 0.5
-#define CUBE_WIDTH 0.3
-#define CUBE_HEIGHT 0.3
-#define CUBE_DEPTH 0.3
 
 int main(void) {
     SSG_Canvas canvas = ssg_create_canvas(WIDTH, HEIGHT);
@@ -26,9 +29,8 @@ int main(void) {
 
     float angle = 0;
     float dt;
-
-    int edges[12][2] = {{0, 1}, {0, 2}, {0, 4}, {1, 3}, {1, 5}, {2, 3}, {2, 6}, {3, 7}, {4, 5}, {4, 6}, {5, 7}, {6, 7}};
-    while (ssg_window_running()) {
+    while (ssg_window_running())
+    {
         ssg_window_begin_frame();
         
         dt = ssg_window_get_dt();
@@ -36,44 +38,35 @@ int main(void) {
 
         ssg_fill(canvas, BACKGROUND);
 
-        float xs[8];
-        float ys[8];
-        int index = 0;
-        for (int ix = -1; ix <= 1; ix += 2) {
-            for (int iy = -1; iy <= 1; iy += 2) {
-                for (int iz = -1; iz <= 1; iz += 2) {
-                    float x = ix * (CUBE_WIDTH * 0.5f);
-                    float y = iy * (CUBE_HEIGHT * 0.5f);
-                    float z = iz * (CUBE_DEPTH * 0.5f) + Z_START;
+        for(int iy = 0; iy < GRID_COUNT; iy++) {
+            for(int ix = 0; ix < GRID_COUNT; ix++) {
+                for(int iz = 0; iz < GRID_COUNT; iz++) {
+                    float x = ix*GRID_GAP-GRID_SIZE/2;
+                    float y = iy*GRID_GAP-GRID_SIZE/2;
+                    float z = Z_START+iz*GRID_GAP;
 
+                    // Grid center, rotate shape around y axis
                     float cx = 0.0f;
-                    float cz = Z_START;
+                    float cz = Z_START+GRID_SIZE/2;
 
                     ssg_rotate_pointf(&x, &z, cx, cz, angle);
 
-                    float px = x / z;
-                    float py = y / z;
+                    x /= z;
+                    y /= z;
 
-                    px = px * (WIDTH * 0.5f) + (WIDTH * 0.5f);
-                    py = py * (HEIGHT * 0.5f) + (HEIGHT * 0.5f);
+                    uint32_t r = ix*255/GRID_COUNT;
+                    uint32_t g = iy*255/GRID_COUNT;
+                    uint32_t b = iz*255/GRID_COUNT;
 
-                    xs[index] = px;
-                    ys[index] = py;
-
-                    index++;
+                    Color color = {
+                        r, g, b, 255
+                    };
+                    ssg_circle(canvas, (x+1)/2*WIDTH, (y+1)/2*HEIGHT, RADIUS, color);
                 }
             }
         }
 
-        for (int i = 0; i < 12; i++) {
-            int a = edges[i][0];
-            int b = edges[i][1];
-
-            ssg_line(canvas,
-                     xs[a], ys[a],
-                     xs[b], ys[b],
-                     0, FOREGROUND);
-        }
+        ssg_text(canvas, "fax\nspinning cube", 0, 770, ssg_default_font, 10, 0.5, 0.5, FOREGROUND);
 
         ssg_window_end_frame(canvas);
     }
