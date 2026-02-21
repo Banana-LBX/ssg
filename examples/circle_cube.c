@@ -25,7 +25,6 @@ int main(void) {
         return -1;
     }
 
-    float time = 0.0f;
     float angle = 0;
     float dt;
     while (ssg_window_running())
@@ -48,17 +47,7 @@ int main(void) {
                     float cx = 0.0f;
                     float cz = Z_START+GRID_SIZE/2;
 
-                    float dx = x-cx;
-                    float dz = z-cz;
-
-                    float cosA = cosf(angle);
-                    float sinA = sinf(angle);
-
-                    float rx = dx * cosA + dz * sinA;
-                    float rz = -dx * sinA + dz * cosA;
-
-                    x = rx + cx;
-                    z = rz + cz;
+                    ssg_rotate_pointf(&x, &z, cx, cz, angle);
 
                     x /= z;
                     y /= z;

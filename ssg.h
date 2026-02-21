@@ -33,7 +33,10 @@ void ssg_free_canvas(SSG_Canvas canvas);
 
 
 bool ssg_bounding_box(SSG_Canvas canvas, int x, int y, int w, int h, SSG_Bounding_Box *box);
-void ssg_rotate_shape(int *xs, int *ys, int count, float cx, float cy, float angle);
+void ssg_rotate_point(int *x, int *y, int cx, int cy, float angle);
+void ssg_rotate_pointf(float *x, float *y, float cx, float cy, float angle);
+void ssg_rotate_points(int *xs, int *ys, int count, int cx, int cy, float angle);
+void ssg_rotate_pointsf(float *xs, float *ys, float count, float cx, float cy, float angle);
 
 void ssg_draw_pixel(SSG_Canvas canvas, int x, int y, Color color);
 void ssg_fill(SSG_Canvas canvas, Color color);
@@ -121,7 +124,35 @@ bool ssg_bounding_box(SSG_Canvas canvas, int x, int y, int w, int h, SSG_Boundin
     return true;
 }
 
-void ssg_rotate_shape(int *xs, int *ys, int count, float cx, float cy, float angle) {
+void ssg_rotate_point(int *x, int *y, int cx, int cy, float angle) {
+    float cosA = cosf(angle);
+    float sinA = sinf(angle);
+
+    float dx = *x - cx;
+    float dy = *y - cy;
+
+    float rx = dx * cosA - dy * sinA;
+    float ry = dx * sinA + dy * cosA;
+
+    *x = (int)(rx + cx);
+    *y = (int)(ry + cy);
+}
+
+void ssg_rotate_pointf(float *x, float *y, float cx, float cy, float angle) {
+    float cosA = cosf(angle);
+    float sinA = sinf(angle);
+
+    float dx = *x - cx;
+    float dy = *y - cy;
+
+    float rx = dx * cosA - dy * sinA;
+    float ry = dx * sinA + dy * cosA;
+
+    *x = rx + cx;
+    *y = ry + cy;
+}
+
+void ssg_rotate_points(int *xs, int *ys, int count, int cx, int cy, float angle) {
     float cosA = cosf(angle);
     float sinA = sinf(angle);
 
@@ -134,6 +165,22 @@ void ssg_rotate_shape(int *xs, int *ys, int count, float cx, float cy, float ang
 
         xs[i] = (int)(rx + cx);
         ys[i] = (int)(ry + cy);
+    }
+}
+
+void ssg_rotate_pointsf(float *xs, float *ys, float count, float cx, float cy, float angle) {
+    float cosA = cosf(angle);
+    float sinA = sinf(angle);
+
+    for(int i = 0; i < count; i++) {
+        float dx = xs[i] - cx;
+        float dy = ys[i] - cy;
+
+        float rx = dx * cosA - dy * sinA;
+        float ry = dx * sinA + dy * cosA;
+
+        xs[i] = rx + cx;
+        ys[i] = ry + cy;
     }
 }
 
