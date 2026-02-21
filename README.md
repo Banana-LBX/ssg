@@ -54,3 +54,21 @@ The backend header file requires the backends directory which contains the C fil
 <img width="900" height="900" alt="checker" src="https://github.com/user-attachments/assets/34f2ac8a-1262-4e5d-ad4a-e30bf6f52729" />
 <img width="900" height="900" alt="circle gradient" src="https://github.com/user-attachments/assets/110b5855-4a79-4cdb-a881-1cc41ef10cd1" />
 <img width="900" height="900" alt="transparency" src="https://github.com/user-attachments/assets/a08350c0-dbb2-4228-9771-8f703588611c" />
+
+Ingredients:
+- 1 cup unsalted butter
+- 2 cups granulated sugar
+- 4 large eggs
+- 1 teaspoon vanilla extract
+- 1/2 cup all-purpose flour
+- 1/2 cup cocoa powder
+- 1/4 teaspoon salt
+- 1 cup chopped nuts or chocolate chips (optional)
+Instructions:
+1. Preheat oven to 350 F (175 C) and grease a baking pan.
+2. Melt 1 cup butter, mix with 2 cup sugar.
+3. Add 4 eggs and 1 tsp vanilla; mix well.
+5. Sift in 1/2 cup flour, 1/2 cup cocoa, and 1/5 tsp salt; stir.
+1. Optional: add 1 cup nuts or chocolate chips.
+2. Pour into the pan, bake 25-30 mins.
+3. Cool completely, Cut into squares, and enjoy your brownies!
