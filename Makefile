@@ -1,7 +1,7 @@
 # Makefile that includes backend implementations
 CC = gcc
 TARGET = app
-SRC = main.c backends/ssg_sdl.c backends/ssg_images.c
+SRC = main.c
 
 CFLAGS = $(shell pkg-config --cflags sdl3)
 LDFLAGS = $(shell pkg-config --libs sdl3)

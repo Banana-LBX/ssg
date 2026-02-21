@@ -5,9 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdio.h>
 #include <math.h>
-#include <errno.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,7 +28,6 @@ typedef struct {
 
 SSG_Canvas ssg_create_canvas(size_t width, size_t height);
 void ssg_free_canvas(SSG_Canvas canvas);
-
 
 bool ssg_bounding_box(SSG_Canvas canvas, int x, int y, int w, int h, SSG_Bounding_Box *box);
 void ssg_rotate_point(int *x, int *y, int cx, int cy, float angle);
