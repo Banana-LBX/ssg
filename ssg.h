@@ -1,11 +1,8 @@
 #ifndef SSG_H
 #define SSG_H
 
-#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <string.h>
-#include <math.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -272,7 +269,7 @@ static char ssg_default_font_symbols[128][DEFAULT_FONT_HEIGHT][DEFAULT_FONT_WIDT
 },
 };
 
-static SSG_Font ssg_default_font = {
+static const SSG_Font ssg_default_font = {
     DEFAULT_FONT_WIDTH,
     DEFAULT_FONT_HEIGHT,
     &ssg_default_font_symbols[0][0][0]
@@ -306,10 +303,11 @@ void ssg_text(SSG_Canvas canvas, const char *text, int x0, int y0, SSG_Font font
 }
 #endif
 
-#endif // SSG_H
-
-
 #ifdef SSG_IMPLEMENTATION
+
+#include <string.h>
+#include <math.h>
+#include <stdlib.h>
 
 /* ===== Helper functions ===== */
 #define SWAP(T, a, b) do { T t = a; a = b; b = t; } while (0)
@@ -678,3 +676,5 @@ void ssg_text(SSG_Canvas canvas, const char *text, int tx, int ty, SSG_Font font
 }
 
 #endif // SSG_IMPLEMENTATION
+
+#endif // SSG_H

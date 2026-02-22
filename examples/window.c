@@ -2,8 +2,8 @@
 #define SSG_IMPLEMENTATION
 #include "ssg.h"
 
-#define SSG_BACKEND_IMPLEMENTATION
-#include "ssg_backend.h"
+#define SSG_SDL_IMPLEMENTATION
+#include "backends/ssg_sdl.h"
 
 #define FOREGROUND (Color){254, 0, 254, 255}
 #define BACKGROUND (Color){20, 20, 20, 255}

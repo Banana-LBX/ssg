@@ -4,8 +4,8 @@
 #define SSG_IMPLEMENTATION
 #include "ssg.h"
 
-#define SSG_BACKEND_IMPLEMENTATION
-#include "ssg_backend.h"
+#define SSG_IMAGE_IMPLEMENTATION
+#include "backends/ssg_image.h"
 
 #define BACKGROUND (Color){20, 20, 20, 255}
 #define FOREGROUND (Color){254, 0, 254, 255}
@@ -44,7 +44,7 @@ bool random_circles(size_t amount) {
 
     ssg_fill(canvas, BACKGROUND);
 
-    for(int i = 0; i < amount; i++) {
+    for(int i = 0; i < (int)amount; i++) {
         int x = ((rand() % 10) * 100) + 10;
         int y = ((rand() % 10) * 100) + 10;
         int r = ((rand() % 10) * 10) + 10;
@@ -61,8 +61,8 @@ bool circles_gradient(size_t rows, size_t cols, size_t cell_size, float start, f
     SSG_Canvas canvas = ssg_create_canvas(width, height);
     if(!canvas.pixels) return false;
 
-    for(int y = 0; y < rows; y ++) {
-        for(int x = 0; x < cols; x ++) {
+    for(int y = 0; y < (int)rows; y ++) {
+        for(int x = 0; x < (int)cols; x ++) {
             float u = (float)x/cols;
             float v = (float)y/cols;
             float t = (u + v)/2;
@@ -96,10 +96,10 @@ bool transparency(void) {
 }
 
 int main(void) {
-    if(!checker_board(100)) return -1;
+    // if(!checker_board(100)) return -1;
     // if(!random_circles(10)) return -1;
     // if(!circles_gradient(10, 10, 100, 10, 80)) return -1;
-    // if(!transparency()) return -1;
+    if(!transparency()) return -1;
 
     return 0;
 }

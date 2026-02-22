@@ -1,8 +1,8 @@
 #define SSG_IMPLEMENTATION
 #include "ssg.h"
 
-#define SSG_BACKEND_IMPLEMENTATION
-#include "ssg_backend.h"
+#define SSG_SDL_IMPLEMENTATION
+#include "backends/ssg_sdl.h"
 
 #define PI 3.14159265359
 

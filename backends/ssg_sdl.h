@@ -1,17 +1,12 @@
-#ifndef SSG_BACKEND_H
-#define SSG_BACKEND_H
+#ifndef SSG_SDL_H
+#define SSG_SDL_H
 
-#include <SDL3/SDL.h>
-#include <errno.h>
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include "ssg.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// SDL Backend
 int  ssg_window_init(SSG_Canvas canvas, const char *title);
 void ssg_window_shutdown(void);
 int  ssg_window_running(void);
@@ -19,7 +14,6 @@ float ssg_window_get_dt(void);
 void ssg_window_begin_frame(void);
 void ssg_window_end_frame(SSG_Canvas canvas);
 
-// Images Backend
 int ssg_save_to_ppm(SSG_Canvas canvas, const char *file_path);
 int ssg_save_to_png(SSG_Canvas canvas, const char *file_path);
 
@@ -27,12 +21,12 @@ int ssg_save_to_png(SSG_Canvas canvas, const char *file_path);
 }
 #endif
 
-#endif // SSG_BACKEND_H
 
+#ifdef SSG_SDL_IMPLEMENTATION
 
-#ifdef SSG_BACKEND_IMPLEMENTATION
+#include <stdio.h>
+#include <SDL3/SDL.h>
 
-/* ===== SDL ===== */
 static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
 static SDL_Texture* texture = NULL;
@@ -45,9 +39,9 @@ int ssg_window_init(SSG_Canvas canvas, const char *title) {
     width = canvas.width;
     height = canvas.height;
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        SDL_Log("SDL_Init failed: %s", SDL_GetError());
-        return 0;
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        printf("SDL_Init failed: %s\n", SDL_GetError());
+        return 1;
     }
 
     window = SDL_CreateWindow(title, width, height, 0);
@@ -130,30 +124,6 @@ void ssg_window_end_frame(SSG_Canvas canvas) {
     SDL_RenderPresent(renderer);
 }
 
-/* ===== IMAGES ===== */
-int ssg_save_to_ppm(SSG_Canvas canvas, const char *file_path) {
-    FILE *f = fopen(file_path, "wb");
-    if(!f) return errno;
+#endif // SSG_SDL_IMPLEMENTATION
 
-    fprintf(f, "P6\n%zu %zu\n255\n", canvas.width, canvas.height);
-
-    for(size_t i = 0; i < canvas.width * canvas.height; i++) {
-        Color pixel = canvas.pixels[i];
-        uint8_t bytes[3] = {pixel.r, pixel.g, pixel.b};
-        fwrite(bytes, sizeof(bytes), 1, f);
-    }
-
-    fclose(f);
-    return 0;
-}
-
-int ssg_save_to_png(SSG_Canvas canvas, const char *file_path) {
-    if (!stbi_write_png(file_path, canvas.width, canvas.height, 4, canvas.pixels, canvas.width * sizeof(Color))) {
-        fprintf(stderr, "ERROR: could not write output.png\n");
-        return errno;
-    }
-
-    return 0;
-}
-
-#endif // SSG_BACKEND_IMPLEMENTATION
+#endif // SSG_SDL_H
