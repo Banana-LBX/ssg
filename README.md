@@ -44,10 +44,17 @@ int main(void) {
 }
 ```
 ## Ports to Other Backends
-Include the ssg_backend.h in your code to use pre-made functions for: SDL, WASM(TODO), ASCII(TODO).
-The backend header file requires the backends directory which contains the C files for the backends.
+Include the backend you want like this (you must define the implementation):
 ```c
-#include "ssg_backend.h"
+#define SSG_IMAGE_IMPLEMENTATION
+#include "backends/ssg_image.h"
+
+#define SSG_ASCII_IMPLEMENTATION
+#include "backends/ssg_ascii.h"
+
+// requires sdl3
+#define SSG_SDL_IMPLEMENTATION
+#include "backends/ssg_sdl.h"
 ```
 ## More Examples in example.c
 <img width="900" height="900" alt="balls2" src="https://github.com/user-attachments/assets/7b5178e9-206b-49ee-96ef-0ba83b8519c3" />
