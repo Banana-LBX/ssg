@@ -29,8 +29,7 @@ int main(void) {
 
     float angle = 0;
     float dt;
-    while (ssg_window_running())
-    {
+    while (ssg_window_running()) {
         ssg_window_begin_frame();
         
         dt = ssg_window_get_dt();

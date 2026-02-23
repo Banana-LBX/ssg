@@ -4,6 +4,9 @@
 #define SSG_SDL_IMPLEMENTATION
 #include "backends/ssg_sdl.h"
 
+#define SSG_ASCII_IMPLEMENTATION
+#include "backends/ssg_ascii.h"
+
 #define PI 3.14159265359
 
 #define FOREGROUND (Color){254, 0, 254, 255}
@@ -19,20 +22,10 @@ const int cell_size = 100;
 int main(void) {
     SSG_Canvas canvas = ssg_create_canvas(WIDTH, HEIGHT);
 
-    if (!ssg_window_init(canvas, "SSG")) {
-        fprintf(stderr, "Failed to initialize SDL backend!\n");
-        ssg_free_canvas(canvas);
-        return -1;
-    }
-
     float time = 0.0f;
 
-    while (ssg_window_running())
-    {
-        ssg_window_begin_frame();
-
-        float dt = ssg_window_get_dt();
-        time += dt;
+    for (;;) {
+        time += 0.01;
 
         ssg_fill(canvas, BACKGROUND);
 
@@ -62,10 +55,12 @@ int main(void) {
             }
         }
 
-        ssg_window_end_frame(canvas);
+        SSG_Canvas render_canvas = ssg_canvas_downscale(canvas, 5, 5);
+        ssg_render_ascii(render_canvas, " .:a@#");
+
+        system("cls");
     }
 
-    ssg_window_shutdown();
     ssg_free_canvas(canvas);
 
     return 0;

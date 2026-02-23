@@ -487,46 +487,52 @@ SSG_Canvas ssg_create_canvas(size_t width, size_t height) {
 }
 
 // downsamples the canvas by compressing blocks(chunks) into pixels
-void ssg_canvas_downscale(SSG_Canvas *canvas, size_t block_width, size_t block_height) {
-    if (!canvas || !canvas->pixels) return;
-    if (block_width == 0 || block_height == 0) return;
+SSG_Canvas ssg_canvas_downscale(SSG_Canvas canvas, size_t block_width, size_t block_height) {
+    if (!canvas.pixels) return (SSG_Canvas){0};
+    if (block_width == 0 || block_height == 0) return (SSG_Canvas){0};
 
-    size_t new_width  = canvas->width  / block_width;
-    size_t new_height = canvas->height / block_height;
+    size_t new_width  = canvas.width  / block_width;
+    size_t new_height = canvas.height / block_height;
 
-    if (new_width == 0 || new_height == 0) return;
+    if (new_width == 0 || new_height == 0)
+        return (SSG_Canvas){0};
+
+    SSG_Canvas result = ssg_create_canvas(new_width, new_height);
+    if (!result.pixels)
+        return (SSG_Canvas){0};
 
     for (size_t y = 0; y < new_height; y++) {
         for (size_t x = 0; x < new_width; x++) {
+
             uint32_t r = 0, g = 0, b = 0, a = 0;
-            size_t count = 0;
+
             for (size_t by = 0; by < block_height; by++) {
                 for (size_t bx = 0; bx < block_width; bx++) {
+
                     size_t sx = x * block_width  + bx;
                     size_t sy = y * block_height + by;
 
-                    Color p = canvas->pixels[sy * canvas->width + sx];
+                    Color p = canvas.pixels[sy * canvas.width + sx];
 
                     r += p.r;
                     g += p.g;
                     b += p.b;
                     a += p.a;
-                    count++;
                 }
             }
 
-            Color avg = {
+            size_t count = block_width * block_height;
+
+            result.pixels[y * new_width + x] = (Color){
                 .r = r / count,
                 .g = g / count,
                 .b = b / count,
                 .a = a / count
             };
-
-            canvas->pixels[y * new_width + x] = avg;
         }
     }
-    canvas->width  = new_width;
-    canvas->height = new_height;
+
+    return result;
 }
 
 void ssg_free_canvas(SSG_Canvas canvas) {

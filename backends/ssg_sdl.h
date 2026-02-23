@@ -31,20 +31,20 @@ static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
 static SDL_Texture* texture = NULL;
 
-static int width;
-static int height;
+static int ssg_window_width;
+static int ssg_window_height;
 static int running = 1;
 
 int ssg_window_init(SSG_Canvas canvas, const char *title) {
-    width = canvas.width;
-    height = canvas.height;
+    ssg_window_width = canvas.width;
+    ssg_window_height = canvas.height;
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         printf("SDL_Init failed: %s\n", SDL_GetError());
         return 1;
     }
 
-    window = SDL_CreateWindow(title, width, height, 0);
+    window = SDL_CreateWindow(title, ssg_window_width, ssg_window_height, 0);
     if (!window) {
         SDL_Log("SDL_CreateWindow failed: %s", SDL_GetError());
         SDL_Quit();
@@ -64,8 +64,8 @@ int ssg_window_init(SSG_Canvas canvas, const char *title) {
         renderer,
         SDL_PIXELFORMAT_RGBA32,
         SDL_TEXTUREACCESS_STREAMING,
-        width,
-        height
+        ssg_window_width,
+        ssg_window_height
     );
 
     if (!texture) {
@@ -117,7 +117,7 @@ void ssg_window_begin_frame(void) {
 void ssg_window_end_frame(SSG_Canvas canvas) {
     SDL_UpdateTexture(texture, NULL,
                       canvas.pixels,
-                      width * sizeof(Color));
+                      ssg_window_width * sizeof(Color));
 
     SDL_RenderClear(renderer);
     SDL_RenderTexture(renderer, texture, NULL, NULL);

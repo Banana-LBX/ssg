@@ -21,17 +21,48 @@ void ssg_render_ascii(SSG_Canvas canvas, const char *table);
 #include <stdio.h>
 
 char ssg_pixel_to_ascii(Color pixel, const char *table) {
+    size_t table_size = strlen(table);
+
+    size_t r = pixel.r;
+    size_t g = pixel.g;
+    size_t b = pixel.b;
+
+    size_t bright = r;
+
+    if (bright < g) bright = g;
+    if (bright < b) bright = b;
+
+    return table[bright*table_size/256];
 }
 
 void ssg_render_ascii(SSG_Canvas canvas, const char *table) {
-    for(size_t y = 0; y < canvas.height; y++) {
-        for(size_t x = 0; x < canvas.width; x++) {
-            putc(ssg_pixel_to_ascii(canvas.pixels[y*canvas.width+x], table), stdout);
-            putc(ssg_pixel_to_ascii(canvas.pixels[y*canvas.width+x], table), stdout);
+    printf("\033[H");
+
+    size_t width = canvas.width;
+    size_t height = canvas.height;
+
+    size_t buffer_size = (width + 1) * height + 1;
+    char *buffer = malloc(buffer_size);
+    if (!buffer) return;
+
+    char *ptr = buffer;
+
+    for (size_t y = 0; y < height; y++) {
+        for (size_t x = 0; x < width; x++) {
+            *ptr++ = ssg_pixel_to_ascii(
+                canvas.pixels[y * width + x],
+                table
+            );
         }
-        putc('\n', stdout);
+        *ptr++ = '\n';
     }
+
+    *ptr = '\0';
+
+    printf("%s", buffer);
     fflush(stdout);
+
+    free(buffer);
 }
 
 #endif // SSG_ASCII_IMPLEMENTATION
