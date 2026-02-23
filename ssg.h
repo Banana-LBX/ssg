@@ -1,6 +1,7 @@
 #ifndef SSG_H
 #define SSG_H
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -278,12 +279,6 @@ static const SSG_Font ssg_default_font = {
 SSG_Canvas ssg_create_canvas(size_t width, size_t height);
 void ssg_free_canvas(SSG_Canvas canvas);
 
-bool ssg_bounding_box(SSG_Canvas canvas, int x, int y, int w, int h, SSG_Bounding_Box *box);
-void ssg_rotate_point(int *x, int *y, int cx, int cy, float angle);
-void ssg_rotate_pointf(float *x, float *y, float cx, float cy, float angle);
-void ssg_rotate_points(int *xs, int *ys, int count, int cx, int cy, float angle);
-void ssg_rotate_pointsf(float *xs, float *ys, float count, float cx, float cy, float angle);
-
 void ssg_draw_pixel(SSG_Canvas canvas, int x, int y, Color color);
 void ssg_fill(SSG_Canvas canvas, Color color);
 
@@ -291,7 +286,6 @@ void ssg_line(SSG_Canvas canvas, int x1, int y1, int x2, int y2, size_t thicknes
 void ssg_triangle(SSG_Canvas canvas, int x1, int y1, int x2, int y2, int x3, int y3, Color color);
 void ssg_polygon(SSG_Canvas canvas, int *xs, int *ys, int count, Color color);
 void ssg_polygon_outline(SSG_Canvas canvas, int *xs, int *ys, int count, size_t thickness, Color color);
-void ssg_polygon_get_center(int *xs, int *ys, int count, int *cx, int *cy);
 void ssg_rect(SSG_Canvas canvas, int x, int y, int width, int height, Color color);
 void ssg_rect_outline(SSG_Canvas canvas, int x, int y, int width, int height, size_t thickness, Color color);
 void ssg_circle(SSG_Canvas canvas, int cx, int cy, int r, Color color);
@@ -332,23 +326,7 @@ static inline float ssg_lerpf(float a, float b, float t) {
     return a + (b - a) * t;
 }
 
-/* ===== Implementation ===== */
-
-SSG_Canvas ssg_create_canvas(size_t width, size_t height) {
-    SSG_Canvas canvas;
-    canvas.width  = width;
-    canvas.height = height;
-    canvas.pixels = malloc(width * height * sizeof(Color));
-    if(canvas.pixels)
-        memset(canvas.pixels, 0, width * height * sizeof(Color));
-    return canvas;
-}
-
-void ssg_free_canvas(SSG_Canvas canvas) {
-    free(canvas.pixels);
-}
-
-bool ssg_bounding_box(SSG_Canvas canvas, int x, int y, int w, int h, SSG_Bounding_Box *box) {
+static inline bool ssg_bounding_box(SSG_Canvas canvas, int x, int y, int w, int h, SSG_Bounding_Box *box) {
     box->x1 = x;
     box->y1 = y;
 
@@ -373,7 +351,7 @@ bool ssg_bounding_box(SSG_Canvas canvas, int x, int y, int w, int h, SSG_Boundin
     return true;
 }
 
-void ssg_rotate_point(int *x, int *y, int cx, int cy, float angle) {
+static inline void ssg_rotate_point(int *x, int *y, int cx, int cy, float angle) {
     float cosA = cosf(angle);
     float sinA = sinf(angle);
 
@@ -387,7 +365,7 @@ void ssg_rotate_point(int *x, int *y, int cx, int cy, float angle) {
     *y = (int)(ry + cy);
 }
 
-void ssg_rotate_pointf(float *x, float *y, float cx, float cy, float angle) {
+static inline void ssg_rotate_pointf(float *x, float *y, float cx, float cy, float angle) {
     float cosA = cosf(angle);
     float sinA = sinf(angle);
 
@@ -401,7 +379,7 @@ void ssg_rotate_pointf(float *x, float *y, float cx, float cy, float angle) {
     *y = ry + cy;
 }
 
-void ssg_rotate_points(int *xs, int *ys, int count, int cx, int cy, float angle) {
+static inline void ssg_rotate_points(int *xs, int *ys, int count, int cx, int cy, float angle) {
     float cosA = cosf(angle);
     float sinA = sinf(angle);
 
@@ -417,7 +395,7 @@ void ssg_rotate_points(int *xs, int *ys, int count, int cx, int cy, float angle)
     }
 }
 
-void ssg_rotate_pointsf(float *xs, float *ys, float count, float cx, float cy, float angle) {
+static inline void ssg_rotate_pointsf(float *xs, float *ys, float count, float cx, float cy, float angle) {
     float cosA = cosf(angle);
     float sinA = sinf(angle);
 
@@ -433,26 +411,134 @@ void ssg_rotate_pointsf(float *xs, float *ys, float count, float cx, float cy, f
     }
 }
 
+static inline Color ssg_blend(Color dst, Color src) {
+    // Fully opaque source
+    if (src.a == 255)
+        return src;
+
+    // Fully transparent source
+    if (src.a == 0)
+        return dst;
+
+    uint8_t inv = 255 - src.a;
+
+    Color out;
+    out.r = (uint8_t)((src.r * src.a + dst.r * inv) / 255);
+    out.g = (uint8_t)((src.g * src.a + dst.g * inv) / 255);
+    out.b = (uint8_t)((src.b * src.a + dst.b * inv) / 255);
+    out.a = 255; // result is fully opaque
+
+    return out;
+}
+
+static inline void ssg_polygon_get_center(int *xs, int *ys, int count, int *cx, int *cy) {
+    if(count < 3) {
+        *cx = 0;
+        *cy = 0;
+        return;
+    }
+
+    float area = 0.0f;
+    float center_x = 0.0f;
+    float center_y = 0.0f;
+
+    for(int i = 0; i < count; i++) {
+        int j = (i + 1) % count;
+
+        float cross = (float)xs[i] * ys[j] - (float)xs[j] * ys[i];
+        area += cross;
+        center_x += (xs[i] + xs[j]) * cross;
+        center_y += (ys[i] + ys[j]) * cross;
+    }
+
+    area *= 0.5f;
+
+    // Degenerate polygon
+    if(area > -1e-6f && area < 1e-6f) {
+        long sum_x = 0;
+        long sum_y = 0;
+
+        for(int i = 0; i < count; i++) {
+            sum_x += xs[i];
+            sum_y += ys[i];
+        }
+
+        *cx = sum_x / count;
+        *cy = sum_y / count;
+        return;
+    }
+
+    center_x /= (6.0f * area);
+    center_y /= (6.0f * area);
+
+    *cx = (int)center_x;
+    *cy = (int)center_y;
+}
+
+/* ===== Implementation ===== */
+SSG_Canvas ssg_create_canvas(size_t width, size_t height) {
+    SSG_Canvas canvas;
+    canvas.width  = width;
+    canvas.height = height;
+    canvas.pixels = malloc(width * height * sizeof(Color));
+    if(canvas.pixels)
+        memset(canvas.pixels, 0, width * height * sizeof(Color));
+    return canvas;
+}
+
+// downsamples the canvas by compressing blocks(chunks) into pixels
+void ssg_canvas_downscale(SSG_Canvas *canvas, size_t block_width, size_t block_height) {
+    if (!canvas || !canvas->pixels) return;
+    if (block_width == 0 || block_height == 0) return;
+
+    size_t new_width  = canvas->width  / block_width;
+    size_t new_height = canvas->height / block_height;
+
+    if (new_width == 0 || new_height == 0) return;
+
+    for (size_t y = 0; y < new_height; y++) {
+        for (size_t x = 0; x < new_width; x++) {
+            uint32_t r = 0, g = 0, b = 0, a = 0;
+            size_t count = 0;
+            for (size_t by = 0; by < block_height; by++) {
+                for (size_t bx = 0; bx < block_width; bx++) {
+                    size_t sx = x * block_width  + bx;
+                    size_t sy = y * block_height + by;
+
+                    Color p = canvas->pixels[sy * canvas->width + sx];
+
+                    r += p.r;
+                    g += p.g;
+                    b += p.b;
+                    a += p.a;
+                    count++;
+                }
+            }
+
+            Color avg = {
+                .r = r / count,
+                .g = g / count,
+                .b = b / count,
+                .a = a / count
+            };
+
+            canvas->pixels[y * new_width + x] = avg;
+        }
+    }
+    canvas->width  = new_width;
+    canvas->height = new_height;
+}
+
+void ssg_free_canvas(SSG_Canvas canvas) {
+    free(canvas.pixels);
+}
+
 void ssg_draw_pixel(SSG_Canvas canvas, int x, int y, Color src) {
     if(x < 0 || y < 0 || x >= (int)canvas.width || y >= (int)canvas.height)
         return;
 
     Color *dst = &canvas.pixels[y * canvas.width + x];
-    if(src.a == 255) {
-        *dst = src;
-        return;
-    }
-    if(src.a == 0)
-        return;
-
-    uint8_t inv = 255 - src.a;
-
-    // blend colors according to alpha
-    dst->r = (uint8_t)((src.r * src.a + dst->r * inv) / 255);
-    dst->g = (uint8_t)((src.g * src.a + dst->g * inv) / 255);
-    dst->b = (uint8_t)((src.b * src.a + dst->b * inv) / 255);
-    // set back to opaque
-    dst->a = 255;
+    *dst = ssg_blend(*dst, src);
 }
 
 void ssg_fill(SSG_Canvas canvas, Color color) {
@@ -534,54 +620,16 @@ void ssg_polygon_outline(SSG_Canvas canvas, int *xs, int *ys, int count, size_t 
     }
 }
 
-void ssg_polygon_get_center(int *xs, int *ys, int count, int *cx, int *cy) {
-    if(count < 3) {
-        *cx = 0;
-        *cy = 0;
-        return;
-    }
-
-    float area = 0.0f;
-    float center_x = 0.0f;
-    float center_y = 0.0f;
-
-    for(int i = 0; i < count; i++) {
-        int j = (i + 1) % count;
-
-        float cross = (float)xs[i] * ys[j] - (float)xs[j] * ys[i];
-        area += cross;
-        center_x += (xs[i] + xs[j]) * cross;
-        center_y += (ys[i] + ys[j]) * cross;
-    }
-
-    area *= 0.5f;
-
-    // Degenerate polygon
-    if(area > -1e-6f && area < 1e-6f) {
-        long sum_x = 0;
-        long sum_y = 0;
-
-        for(int i = 0; i < count; i++) {
-            sum_x += xs[i];
-            sum_y += ys[i];
-        }
-
-        *cx = sum_x / count;
-        *cy = sum_y / count;
-        return;
-    }
-
-    center_x /= (6.0f * area);
-    center_y /= (6.0f * area);
-
-    *cx = (int)center_x;
-    *cy = (int)center_y;
-}
-
 void ssg_rect(SSG_Canvas canvas, int x, int y, int width, int height, Color color) {
-    int xs[4] = {x, x+width, x+width, x};
-    int ys[4] = {y, y, y+height, y+height};
-    ssg_polygon(canvas, xs, ys, 4, color);
+    SSG_Bounding_Box box;
+    if (!ssg_bounding_box(canvas, x, y, width, height, &box))
+        return;
+
+    for (int py = box.y1; py <= box.y2; py++) {
+        for (int px = box.x1; px <= box.x2; px++) {
+            ssg_draw_pixel(canvas, px, py, color);
+        }
+    }
 }
 
 void ssg_rect_outline(SSG_Canvas canvas, int x, int y, int width, int height, size_t thickness, Color color) {
