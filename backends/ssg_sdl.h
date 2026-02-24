@@ -12,10 +12,8 @@ void ssg_window_shutdown(void);
 int  ssg_window_running(void);
 float ssg_window_get_dt(void);
 void ssg_window_begin_frame(void);
+bool ssg_window_check_key(const char *key_name);
 void ssg_window_end_frame(SSG_Canvas canvas);
-
-int ssg_save_to_ppm(SSG_Canvas canvas, const char *file_path);
-int ssg_save_to_png(SSG_Canvas canvas, const char *file_path);
 
 #ifdef __cplusplus
 }
@@ -112,6 +110,17 @@ void ssg_window_begin_frame(void) {
         if (event.type == SDL_EVENT_QUIT)
             running = 0;
     }
+}
+
+bool ssg_window_check_key(const char *key_name) {
+    SDL_Scancode scancode = SDL_GetScancodeFromName(key_name);
+
+    if (scancode == SDL_SCANCODE_UNKNOWN)
+        return false;
+
+    const bool *keyboard = SDL_GetKeyboardState(NULL);
+
+    return keyboard[scancode];
 }
 
 void ssg_window_end_frame(SSG_Canvas canvas) {

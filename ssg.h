@@ -283,11 +283,11 @@ void ssg_draw_pixel(SSG_Canvas canvas, int x, int y, Color color);
 void ssg_fill(SSG_Canvas canvas, Color color);
 
 void ssg_line(SSG_Canvas canvas, int x1, int y1, int x2, int y2, size_t thickness, Color color);
-void ssg_triangle(SSG_Canvas canvas, int x1, int y1, int x2, int y2, int x3, int y3, Color color);
-void ssg_polygon(SSG_Canvas canvas, int *xs, int *ys, int count, Color color);
-void ssg_polygon_outline(SSG_Canvas canvas, int *xs, int *ys, int count, size_t thickness, Color color);
-void ssg_rect(SSG_Canvas canvas, int x, int y, int width, int height, Color color);
-void ssg_rect_outline(SSG_Canvas canvas, int x, int y, int width, int height, size_t thickness, Color color);
+void ssg_triangle(SSG_Canvas canvas, int x1, int y1, int x2, int y2, int x3, int y3, float angle, Color color);
+void ssg_polygon(SSG_Canvas canvas, int *xs, int *ys, int count, float angle, Color color);
+void ssg_polygon_outline(SSG_Canvas canvas, int *xs, int *ys, int count, float angle, size_t thickness, Color color);
+void ssg_rect(SSG_Canvas canvas, int x, int y, int width, int height, float angle, Color color);
+void ssg_rect_outline(SSG_Canvas canvas, int x, int y, int width, int height, float angle, size_t thickness, Color color);
 void ssg_circle(SSG_Canvas canvas, int cx, int cy, int r, Color color);
 void ssg_circle_outline(SSG_Canvas canvas, int cx, int cy, int r, size_t thickness, Color color);
 
@@ -555,31 +555,16 @@ void ssg_fill(SSG_Canvas canvas, Color color) {
     }
 }
 
-void ssg_line(SSG_Canvas canvas, int x1, int y1, int x2, int y2, size_t thickness, Color color) {
-    // Bresenham line drawing algorithm
-    int dx = ABS(int, (x2 - x1));
-    int dy = ABS(int, (y2 - y1));
+void ssg_triangle(SSG_Canvas canvas, int x1, int y1, int x2, int y2, int x3, int y3, float angle, Color color) {
+    if (angle != 0.0f) {
+        int cx = (x1 + x2 + x3) / 3;
+        int cy = (y1 + y2 + y3) / 3;
 
-    int sx = (x1 < x2) ? 1 : -1;
-    int sy = (y1 < y2) ? 1 : -1;
-
-    int err = dx - dy;
-
-    int half = thickness / 2;
-
-    while (1) {
-        // Draw centered rectangle at the current line pixel
-        ssg_rect(canvas, x1 - half, y1 - half, thickness, thickness, color);
-        if (x1 == x2 && y1 == y2)
-            break;
-
-        int e2 = 2 * err;
-        if (e2 > -dy) { err -= dy; x1 += sx; }
-        if (e2 <  dx) { err += dx; y1 += sy; }
+        ssg_rotate_point(&x1, &y1, cx, cy, angle);
+        ssg_rotate_point(&x2, &y2, cx, cy, angle);
+        ssg_rotate_point(&x3, &y3, cx, cy, angle);
     }
-}
 
-void ssg_triangle(SSG_Canvas canvas, int x1, int y1, int x2, int y2, int x3, int y3, Color color) {
     int coords_x[3] = {x1, x2, x3};
     int coords_y[3] = {y1, y2, y3};
 
@@ -607,41 +592,90 @@ void ssg_triangle(SSG_Canvas canvas, int x1, int y1, int x2, int y2, int x3, int
     }
 }
 
-void ssg_polygon(SSG_Canvas canvas, int *xs, int *ys, int count, Color color) {
-    if (count < 2) return;
+void ssg_polygon(SSG_Canvas canvas, int *xs, int *ys, int count, float angle, Color color) {
+    if (count < 3) return;
+
+    int rx[count];
+    int ry[count];
+
+    int cx = 0, cy = 0;
+    for (int i = 0; i < count; i++) {
+        cx += xs[i];
+        cy += ys[i];
+    }
+    cx /= count;
+    cy /= count;
+
+    for (int i = 0; i < count; i++) {
+        rx[i] = xs[i];
+        ry[i] = ys[i];
+    }
+
+    if (angle != 0.0f)
+        ssg_rotate_points(rx, ry, count, cx, cy, angle);
+
     for(int i = 1; i < count - 1; i++) {
         ssg_triangle(canvas,
             xs[0], ys[0],
             xs[i], ys[i],
             xs[i+1], ys[i+1],
+            angle,
             color);
     }
 }
 
-void ssg_polygon_outline(SSG_Canvas canvas, int *xs, int *ys, int count, size_t thickness, Color color) {
-    if (count < 2) return;
+void ssg_polygon_outline(SSG_Canvas canvas, int *xs, int *ys, int count, float angle, size_t thickness, Color color) {
+    if (count < 3) return;
+
+    int rx[count];
+    int ry[count];
+
+    int cx = 0, cy = 0;
+    for (int i = 0; i < count; i++) {
+        cx += xs[i];
+        cy += ys[i];
+    }
+    cx /= count;
+    cy /= count;
+
+    for (int i = 0; i < count; i++) {
+        rx[i] = xs[i];
+        ry[i] = ys[i];
+    }
+
+    if (angle != 0.0f)
+        ssg_rotate_points(rx, ry, count, cx, cy, angle);
+
     for (int i = 0; i < count; i++) {
         int j = (i + 1) % count;  // wrap to first vertex
         ssg_line(canvas, xs[i], ys[i], xs[j], ys[j], thickness, color);
     }
 }
 
-void ssg_rect(SSG_Canvas canvas, int x, int y, int width, int height, Color color) {
-    SSG_Bounding_Box box;
-    if (!ssg_bounding_box(canvas, x, y, width, height, &box))
-        return;
-
-    for (int py = box.y1; py <= box.y2; py++) {
-        for (int px = box.x1; px <= box.x2; px++) {
-            ssg_draw_pixel(canvas, px, py, color);
-        }
-    }
-}
-
-void ssg_rect_outline(SSG_Canvas canvas, int x, int y, int width, int height, size_t thickness, Color color) {
+void ssg_rect(SSG_Canvas canvas, int x, int y, int width, int height, float angle, Color color) {
     int xs[4] = {x, x+width, x+width, x};
     int ys[4] = {y, y, y+height, y+height};
-    ssg_polygon_outline(canvas, xs, ys, 4, thickness, color);
+
+    int cx = x + width  / 2;
+    int cy = y + height / 2;
+
+    if (angle != 0.0f)
+        ssg_rotate_points(xs, ys, 4, cx, cy, angle);
+
+    ssg_polygon(canvas, xs, ys, 4, 0.0f, color);
+}
+
+void ssg_rect_outline(SSG_Canvas canvas, int x, int y, int width, int height, float angle, size_t thickness, Color color) {
+    int xs[4] = {x, x+width, x+width, x};
+    int ys[4] = {y, y, y+height, y+height};
+
+    int cx = x + width  / 2;
+    int cy = y + height / 2;
+
+    if (angle != 0.0f)
+        ssg_rotate_points(xs, ys, 4, cx, cy, angle);
+
+    ssg_polygon_outline(canvas, xs, ys, 4, thickness, 0.0f, color);
 }
 
 void ssg_circle(SSG_Canvas canvas, int cx, int cy, int r, Color color) {
@@ -688,6 +722,30 @@ void ssg_circle_outline(SSG_Canvas canvas, int cx, int cy, int r, size_t thickne
     }
 }
 
+void ssg_line(SSG_Canvas canvas, int x1, int y1, int x2, int y2, size_t thickness, Color color) {
+    // Bresenham line drawing algorithm
+    int dx = ABS(int, (x2 - x1));
+    int dy = ABS(int, (y2 - y1));
+
+    int sx = (x1 < x2) ? 1 : -1;
+    int sy = (y1 < y2) ? 1 : -1;
+
+    int err = dx - dy;
+
+    int half = thickness / 2;
+
+    while (1) {
+        // Draw centered rectangle at the current line pixel
+        ssg_rect(canvas, x1 - half, y1 - half, thickness, thickness, 0, color);
+        if (x1 == x2 && y1 == y2)
+            break;
+
+        int e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x1 += sx; }
+        if (e2 <  dx) { err += dx; y1 += sy; }
+    }
+}
+
 void ssg_text(SSG_Canvas canvas, const char *text, int tx, int ty, SSG_Font font, size_t size, float letter_spacing, float word_spacing, Color color) {
     if(size == 0) return;
 
@@ -719,7 +777,7 @@ void ssg_text(SSG_Canvas canvas, const char *text, int tx, int ty, SSG_Font font
                     int px = cursor_x + dx * size;
                     int py = cursor_y + dy * size;
 
-                    ssg_rect(canvas, px, py, size, size, color);
+                    ssg_rect(canvas, px, py, size, size, 0, color);
                 }
             }
         }

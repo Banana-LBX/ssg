@@ -1,7 +1,10 @@
+main.c
 stb_image_write.h
 app.exe
 wave.exe
 cube.exe
 wiremesh.exe
-test.c
+ascii_wave.exe
+image.exe
+main.c
 TODO.txt

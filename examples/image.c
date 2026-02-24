@@ -25,7 +25,7 @@ bool checker_board(size_t cell_size) {
     for(size_t y = 0; y < height/cell_height; y++) {
         for(size_t x = 0; x < width/cell_width; x++) {
             if((x+y) % 2 == 0) {
-                ssg_rect(canvas, x*cell_height, y*cell_width, cell_width, cell_height, FOREGROUND);
+                ssg_rect(canvas, x*cell_height, y*cell_width, cell_width, cell_height, 0, FOREGROUND);
             }
         }
     }
@@ -85,9 +85,9 @@ bool transparency(void) {
     if(!canvas.pixels) return false;
 
     ssg_fill(canvas, BACKGROUND);
-    ssg_triangle(canvas, 400, 200, 200, 600, 600, 600, (Color){254, 0, 254, 255});
+    ssg_triangle(canvas, 400, 200, 200, 600, 600, 600, 0, (Color){254, 0, 254, 255});
     ssg_circle(canvas, 300, 300, 100, (Color){0, 220, 10, 100});
-    ssg_rect(canvas, 500, 500, 150, 150, (Color) {0, 10, 220, 50});
+    ssg_rect(canvas, 500, 500, 150, 150, 0, (Color) {0, 10, 220, 50});
 
     ssg_save_to_png(canvas, "outputs/output.png");
     ssg_free_canvas(canvas);

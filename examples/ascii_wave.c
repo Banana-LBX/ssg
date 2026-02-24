@@ -51,7 +51,7 @@ int main(void) {
                 int center_y = y*cell_size+cell_size/2;
                 int xs[4] = {center_x-radius, center_x+radius, center_x+radius, center_x-radius};
                 int ys[4] = {center_y-radius, center_y-radius, center_y+radius, center_y+radius};
-                ssg_polygon_outline(canvas, xs, ys, 4, 0, FOREGROUND);
+                ssg_polygon_outline(canvas, xs, ys, 4, 0, 0, FOREGROUND);
             }
         }
 
