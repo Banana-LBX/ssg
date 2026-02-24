@@ -1,14 +1,14 @@
-# SSG
+# SSG Simple Graphics
 A single file graphics library written in C.
 This library doesnt have any dependencies besides the C standard library.
 ## Example (Checkerboard)
-(this example uses [stb_image_write.h](https://raw.githubusercontent.com/nothings/stb/master/stb_image_write.h))
+This example generates a checkerboard pattern and saves it to an image (uses ssg_image.h)
 ```c
 #define SSG_IMPLEMENTATION
 #include "ssg.h"
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#define SSG_IMAGE_IMPLEMENTATION
+#include "ssg_image.h"
 
 #define BACKGROUND (Color){20, 20, 20, 255}
 #define FOREGROUND (Color){254, 0, 254, 255}
@@ -34,10 +34,7 @@ int main(void) {
         }
     }
 
-    if (!stbi_write_png("outputs/output.png", canvas.width, canvas.height, 4, canvas.pixels, canvas.width * sizeof(Color))) {
-        fprintf(stderr, "ERROR: could not write output.png\n");
-        return -1;
-    }
+    ssg_save_to_png(canvas, "outputs/output.png")
     ssg_free_canvas(canvas);
 
     return 0;
