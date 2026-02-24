@@ -1,4 +1,4 @@
-# SSG
+# SSG Simple Graphics
 A single file graphics library written in C.
 This library doesnt have any dependencies besides the C standard library.
 ## Example (Checkerboard)
