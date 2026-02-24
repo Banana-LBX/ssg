@@ -112,7 +112,21 @@ void ssg_window_begin_frame(void) {
     }
 }
 
-bool ssg_window_check_key(const char *key_name) {
+static bool previous[SDL_SCANCODE_COUNT];
+bool ssg_window_get_key_pressed(const char *key_name) {
+    SDL_Scancode scancode = SDL_GetScancodeFromName(key_name);
+    if (scancode == SDL_SCANCODE_UNKNOWN)
+        return false;
+
+    const bool *keyboard = SDL_GetKeyboardState(NULL);
+
+    bool pressed = keyboard[scancode] && !previous[scancode];
+    previous[scancode] = keyboard[scancode];
+
+    return pressed;
+}
+
+bool ssg_window_get_key_down(const char *key_name) {
     SDL_Scancode scancode = SDL_GetScancodeFromName(key_name);
 
     if (scancode == SDL_SCANCODE_UNKNOWN)
