@@ -28,6 +28,7 @@ typedef struct {
 const int map_width = 19;
 const int map_height = 21;
 const int map_section_size = 40;
+const int dot_radius = 20;
 const int map[] = {
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,
@@ -52,13 +53,17 @@ const int map[] = {
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 };
 
-void DrawMap2D(SSG_Canvas canvas, const int *map, Color color, Color tele_color) {
+void DrawMap2D(SSG_Canvas canvas, const int *map, Color color, Color dot_color, Color tele_color) {
+    float section_gap = map_section_size/10;
+    float dot_render_radius = dot_radius/2;
     for(int y = 0; y < map_height; y++) {
         for(int x = 0; x < map_width; x++) {
             if(map[y*map_width+x] == 1)
-                ssg_rect(canvas, x*map_section_size, y*map_section_size, map_section_size-map_section_size/10, map_section_size-map_section_size/10, 0, color);
+                ssg_rect(canvas, x*map_section_size, y*map_section_size, map_section_size-section_gap, map_section_size-section_gap, 0, color);
             else if(map[y*map_width+x] == 2)
-                ssg_rect(canvas, x*map_section_size, y*map_section_size, map_section_size-map_section_size/10, map_section_size-map_section_size/10, 0, tele_color);
+                ssg_rect(canvas, x*map_section_size, y*map_section_size, map_section_size-section_gap, map_section_size-section_gap, 0, tele_color);
+            else if(map[y*map_width+x] == 0)
+                ssg_circle(canvas, x*map_section_size+dot_radius, y*map_section_size+dot_radius, dot_render_radius, dot_color);
         }
     }
 }
@@ -142,7 +147,6 @@ void MovePlayer(Player *pacman) {
 
 void Render3D(SSG_Canvas canvas, Player *p) {
     for (int i = 0; i < NUM_RAYS; i++) {
-
         float ray_angle = (p->angle - FOV/2.0f) + ((float)i / NUM_RAYS) * FOV;
 
         float ray_dir_x = cosf(ray_angle);
@@ -152,7 +156,7 @@ void Render3D(SSG_Canvas canvas, Player *p) {
         float ray_y = p->y;
 
         float distance = 0;
-        int hit = 0;
+        bool hit = 0;
 
         // DDA stepping
         while (!hit && distance < MAX_DEPTH) {
@@ -160,9 +164,8 @@ void Render3D(SSG_Canvas canvas, Player *p) {
             ray_y += ray_dir_y;
             distance += 1.0f;
 
-            if (IsWall(ray_x, ray_y)) {
-                hit = 1;
-            }
+            if (IsWall(ray_x, ray_y))
+                hit = true;
         }
 
         if (hit) {
@@ -223,7 +226,7 @@ int main(void) {
         if(draw_map) {
             ssg_circle(canvas, pacman.x, pacman.y, pacman.radius, pacman.color);
             ssg_line(canvas, pacman.x+10*cosf(pacman.angle), pacman.y+20*sinf(pacman.angle), pacman.x, pacman.y, 1, (Color){0, 0, 0, 255});
-            DrawMap2D(canvas, map, (Color){255, 255, 255, 255}, (Color){220, 0, 0, 255});
+            DrawMap2D(canvas, map, (Color){255, 255, 255, 255}, (Color){255, 255, 0, 255}, (Color){220, 0, 0, 255});
         }
 
         ssg_window_end_frame(canvas);
