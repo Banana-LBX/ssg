@@ -140,7 +140,7 @@ bool ssg_window_get_key_down(const char *key_name) {
 void ssg_window_end_frame(SSG_Canvas canvas) {
     SDL_UpdateTexture(texture, NULL,
                       canvas.pixels,
-                      ssg_window_width * sizeof(Color));
+                      canvas.stride * sizeof(Color));
 
     SDL_RenderClear(renderer);
     SDL_RenderTexture(renderer, texture, NULL, NULL);

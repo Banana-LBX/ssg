@@ -50,7 +50,7 @@ void ssg_render_ascii(SSG_Canvas canvas, const char *table) {
     for (size_t y = 0; y < height; y++) {
         for (size_t x = 0; x < width; x++) {
             *ptr++ = ssg_pixel_to_ascii(
-                canvas.pixels[y * width + x],
+                canvas.pixels[y * canvas.stride + x],
                 table
             );
         }

@@ -32,10 +32,12 @@ int ssg_save_to_ppm(SSG_Canvas canvas, const char *file_path) {
 
     fprintf(f, "P6\n%zu %zu\n255\n", canvas.width, canvas.height);
 
-    for(size_t i = 0; i < canvas.width * canvas.height; i++) {
-        Color pixel = canvas.pixels[i];
-        uint8_t bytes[3] = {pixel.r, pixel.g, pixel.b};
-        fwrite(bytes, sizeof(bytes), 1, f);
+    for (size_t y = 0; y < canvas.height; y++) {
+        for (size_t x = 0; x < canvas.width; x++) {
+            Color pixel = canvas.pixels[y * canvas.stride + x];
+            uint8_t bytes[3] = {pixel.r, pixel.g, pixel.b};
+            fwrite(bytes, sizeof(bytes), 1, f);
+        }
     }
 
     fclose(f);
@@ -43,7 +45,7 @@ int ssg_save_to_ppm(SSG_Canvas canvas, const char *file_path) {
 }
 
 int ssg_save_to_png(SSG_Canvas canvas, const char *file_path) {
-    if (!stbi_write_png(file_path, canvas.width, canvas.height, 4, canvas.pixels, canvas.width * sizeof(Color))) {
+    if (!stbi_write_png(file_path, canvas.width, canvas.height, 4, canvas.pixels, canvas.stride * sizeof(Color))) {
         fprintf(stderr, "ERROR: could not write output.png\n");
         return errno;
     }

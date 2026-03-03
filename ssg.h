@@ -17,6 +17,7 @@ typedef struct {
     Color *pixels;
     size_t width;
     size_t height;
+    size_t stride;
 } SSG_Canvas;
 
 typedef struct {
@@ -277,6 +278,8 @@ static const SSG_Font ssg_default_font = {
 };
 
 SSG_Canvas ssg_create_canvas(size_t width, size_t height);
+SSG_Canvas ssg_create_subcanvas(SSG_Canvas canvas, int x, int y, int w, int h);
+SSG_Canvas ssg_canvas_downscale(SSG_Canvas canvas, size_t block_width, size_t block_height);
 void ssg_free_canvas(SSG_Canvas canvas);
 
 void ssg_draw_pixel(SSG_Canvas canvas, int x, int y, Color color);
@@ -292,6 +295,8 @@ void ssg_circle(SSG_Canvas canvas, int cx, int cy, int r, Color color);
 void ssg_circle_outline(SSG_Canvas canvas, int cx, int cy, int r, size_t thickness, Color color);
 
 void ssg_text(SSG_Canvas canvas, const char *text, int x0, int y0, SSG_Font font, size_t size, float letter_spacing, float word_spacing, Color color);
+
+
 
 #ifdef __cplusplus
 }
@@ -480,10 +485,26 @@ SSG_Canvas ssg_create_canvas(size_t width, size_t height) {
     SSG_Canvas canvas;
     canvas.width  = width;
     canvas.height = height;
+    canvas.stride = width;
     canvas.pixels = malloc(width * height * sizeof(Color));
     if(canvas.pixels)
         memset(canvas.pixels, 0, width * height * sizeof(Color));
     return canvas;
+}
+
+SSG_Canvas ssg_create_subcanvas(SSG_Canvas canvas, int x, int y, int w, int h) {
+    SSG_Bounding_Box box = {0};
+    if (!ssg_bounding_box(canvas, x, y, w, h, &box))
+        return (SSG_Canvas){0};
+
+    SSG_Canvas sub;
+
+    sub.pixels = &canvas.pixels[box.y1 * canvas.stride + box.x1];
+    sub.width  = box.x2 - box.x1 + 1;
+    sub.height = box.y2 - box.y1 + 1;
+    sub.stride = canvas.stride;   // <- keep original stride
+
+    return sub;
 }
 
 // downsamples the canvas by compressing blocks(chunks) into pixels
