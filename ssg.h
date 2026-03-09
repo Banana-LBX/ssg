@@ -279,7 +279,7 @@ static const SSG_Font ssg_default_font = {
 
 SSG_Canvas ssg_create_canvas(size_t width, size_t height);
 SSG_Canvas ssg_create_subcanvas(SSG_Canvas canvas, int x, int y, int w, int h);
-SSG_Canvas ssg_canvas_downscale(SSG_Canvas canvas, size_t block_width, size_t block_height);
+SSG_Canvas ssg_canvas_resize(SSG_Canvas canvas, size_t new_width, size_t new_height);
 void ssg_free_canvas(SSG_Canvas canvas);
 
 void ssg_draw_pixel(SSG_Canvas canvas, int x, int y, Color color);
@@ -295,8 +295,6 @@ void ssg_circle(SSG_Canvas canvas, int cx, int cy, int r, Color color);
 void ssg_circle_outline(SSG_Canvas canvas, int cx, int cy, int r, size_t thickness, Color color);
 
 void ssg_text(SSG_Canvas canvas, const char *text, int x0, int y0, SSG_Font font, size_t size, float letter_spacing, float word_spacing, Color color);
-
-
 
 #ifdef __cplusplus
 }
@@ -400,7 +398,7 @@ static inline void ssg_rotate_points(int *xs, int *ys, int count, int cx, int cy
     }
 }
 
-static inline void ssg_rotate_pointsf(float *xs, float *ys, float count, float cx, float cy, float angle) {
+static inline void ssg_rotate_pointsf(float *xs, float *ys, int count, float cx, float cy, float angle) {
     float cosA = cosf(angle);
     float sinA = sinf(angle);
 
@@ -507,49 +505,29 @@ SSG_Canvas ssg_create_subcanvas(SSG_Canvas canvas, int x, int y, int w, int h) {
     return sub;
 }
 
-// downsamples the canvas by compressing blocks(chunks) into pixels
-SSG_Canvas ssg_canvas_downscale(SSG_Canvas canvas, size_t block_width, size_t block_height) {
-    if (!canvas.pixels) return (SSG_Canvas){0};
-    if (block_width == 0 || block_height == 0) return (SSG_Canvas){0};
-
-    size_t new_width  = canvas.width  / block_width;
-    size_t new_height = canvas.height / block_height;
-
-    if (new_width == 0 || new_height == 0)
+// downsamples the canvas
+SSG_Canvas ssg_canvas_resize(SSG_Canvas canvas, size_t new_width, size_t new_height) {
+    if (!canvas.pixels || new_width == 0 || new_height == 0)
         return (SSG_Canvas){0};
 
     SSG_Canvas result = ssg_create_canvas(new_width, new_height);
     if (!result.pixels)
         return (SSG_Canvas){0};
 
+    float scale_x = (float)canvas.width  / new_width;
+    float scale_y = (float)canvas.height / new_height;
+
     for (size_t y = 0; y < new_height; y++) {
         for (size_t x = 0; x < new_width; x++) {
 
-            uint32_t r = 0, g = 0, b = 0, a = 0;
+            size_t src_x = (size_t)(x * scale_x);
+            size_t src_y = (size_t)(y * scale_y);
 
-            for (size_t by = 0; by < block_height; by++) {
-                for (size_t bx = 0; bx < block_width; bx++) {
+            if (src_x >= canvas.width)  src_x = canvas.width - 1;
+            if (src_y >= canvas.height) src_y = canvas.height - 1;
 
-                    size_t sx = x * block_width  + bx;
-                    size_t sy = y * block_height + by;
-
-                    Color p = canvas.pixels[sy * canvas.width + sx];
-
-                    r += p.r;
-                    g += p.g;
-                    b += p.b;
-                    a += p.a;
-                }
-            }
-
-            size_t count = block_width * block_height;
-
-            result.pixels[y * new_width + x] = (Color){
-                .r = r / count,
-                .g = g / count,
-                .b = b / count,
-                .a = a / count
-            };
+            result.pixels[y * result.stride + x] =
+                canvas.pixels[src_y * canvas.stride + src_x];
         }
     }
 
@@ -564,7 +542,7 @@ void ssg_draw_pixel(SSG_Canvas canvas, int x, int y, Color src) {
     if(x < 0 || y < 0 || x >= (int)canvas.width || y >= (int)canvas.height)
         return;
 
-    Color *dst = &canvas.pixels[y * canvas.width + x];
+    Color *dst = &canvas.pixels[y * canvas.stride + x];
     *dst = ssg_blend(*dst, src);
 }
 
@@ -696,7 +674,7 @@ void ssg_rect_outline(SSG_Canvas canvas, int x, int y, int width, int height, fl
     if (angle != 0.0f)
         ssg_rotate_points(xs, ys, 4, cx, cy, angle);
 
-    ssg_polygon_outline(canvas, xs, ys, 4, thickness, 0.0f, color);
+    ssg_polygon_outline(canvas, xs, ys, 4, 0.0f, thickness, color);
 }
 
 void ssg_circle(SSG_Canvas canvas, int cx, int cy, int r, Color color) {

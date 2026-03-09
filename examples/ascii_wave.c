@@ -55,7 +55,7 @@ int main(void) {
             }
         }
 
-        SSG_Canvas render_canvas = ssg_canvas_downscale(canvas, 5, 5);
+        SSG_Canvas render_canvas = ssg_canvas_scale(canvas, 0.25f);
         ssg_render_ascii(render_canvas, " .:a@#");
 
         system("cls");

@@ -9,6 +9,8 @@ extern "C" {
 
 int ssg_save_to_ppm(SSG_Canvas canvas, const char *file_path);
 int ssg_save_to_png(SSG_Canvas canvas, const char *file_path);
+SSG_Canvas ssg_load_texture(const char *file_path);
+void ssg_draw_texture(SSG_Canvas canvas, SSG_Canvas texture, int tex_x, int tex_y, size_t width, size_t height);
 
 #ifdef __cplusplus
 }
@@ -16,13 +18,12 @@ int ssg_save_to_png(SSG_Canvas canvas, const char *file_path);
 
 
 #ifdef SSG_IMAGE_IMPLEMENTATION
-#ifndef SSG_IMAGE_STB_IMPLEMENTATION
-#define SSG_IMAGE_STB_IMPLEMENTATION
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-#endif // SSG_IMAGE_STB_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #include <errno.h>
 
@@ -51,6 +52,53 @@ int ssg_save_to_png(SSG_Canvas canvas, const char *file_path) {
     }
 
     return 0;
+}
+
+SSG_Canvas ssg_load_texture(const char *file_path) {
+    int width, height, channels;
+
+    unsigned char *data = stbi_load(file_path, &width, &height, &channels, 4);
+    if (!data) {
+        fprintf(stderr, "Failed to load image: %s\n", file_path);
+        return (SSG_Canvas){0};
+    }
+
+    SSG_Canvas canvas = ssg_create_canvas(width, height);
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+
+            int i = (y * width + x) * 4;
+
+            Color c = {
+                .r = data[i + 0],
+                .g = data[i + 1],
+                .b = data[i + 2],
+                .a = data[i + 3],
+            };
+
+            canvas.pixels[y * canvas.stride + x] = c;
+        }
+    }
+
+    stbi_image_free(data);
+
+    return canvas;
+}
+
+void ssg_draw_texture(SSG_Canvas canvas, SSG_Canvas texture, int tex_x, int tex_y, size_t width, size_t height) {
+    SSG_Canvas scaled = ssg_canvas_resize(texture, width, height);
+    if (!scaled.pixels) return;
+
+    for (size_t y = 0; y < scaled.height; y++) {
+        for (size_t x = 0; x < scaled.width; x++) {
+            Color c = scaled.pixels[y * scaled.stride + x];
+
+            ssg_draw_pixel(canvas, tex_x + x, tex_y + y, c);
+        }
+    }
+
+    ssg_free_canvas(scaled);
 }
 
 #endif // SSG_IMAGE_IMPLEMENTATION
