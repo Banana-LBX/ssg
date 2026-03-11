@@ -43,6 +43,7 @@ int main(void) {
 ## Ports to Other Backends
 Include the backend you want like this (you must define the implementation):
 ```c
+// requires stb_image_write.h and stb_image.h
 #define SSG_IMAGE_IMPLEMENTATION
 #include "backends/ssg_image.h"
 
