@@ -526,8 +526,7 @@ SSG_Canvas ssg_canvas_resize(SSG_Canvas canvas, size_t new_width, size_t new_hei
             if (src_x >= canvas.width)  src_x = canvas.width - 1;
             if (src_y >= canvas.height) src_y = canvas.height - 1;
 
-            result.pixels[y * result.stride + x] =
-                canvas.pixels[src_y * canvas.stride + src_x];
+            result.pixels[y * result.stride + x] = canvas.pixels[src_y * canvas.stride + src_x];
         }
     }
 
@@ -764,7 +763,7 @@ void ssg_text(SSG_Canvas canvas, const char *text, int tx, int ty, SSG_Font font
 
         // word spacing
         if(c == ' ') {
-            cursor_x += (size+word_spacing) * size;
+            cursor_x += word_spacing * size;
             continue;
         }
 

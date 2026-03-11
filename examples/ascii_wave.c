@@ -25,7 +25,7 @@ int main(void) {
     float time = 0.0f;
 
     for (;;) {
-        time += 0.01;
+        time += 0.05f;
 
         ssg_fill(canvas, BACKGROUND);
 
@@ -46,7 +46,6 @@ int main(void) {
 
                 float radius = min_radius + (max_radius - min_radius) * t;
 
-                // ssg_circle_outline(canvas, x * cell_size + cell_size / 2, y * cell_size + cell_size / 2, radius, FOREGROUND);
                 int center_x = x*cell_size+cell_size/2;
                 int center_y = y*cell_size+cell_size/2;
                 int xs[4] = {center_x-radius, center_x+radius, center_x+radius, center_x-radius};
@@ -55,7 +54,7 @@ int main(void) {
             }
         }
 
-        SSG_Canvas render_canvas = ssg_canvas_scale(canvas, 0.25f);
+        SSG_Canvas render_canvas = ssg_canvas_resize(canvas, canvas.width*0.25f, canvas.height*0.25f);
         ssg_render_ascii(render_canvas, " .:a@#");
 
         system("cls");
