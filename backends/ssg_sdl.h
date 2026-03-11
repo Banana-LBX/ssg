@@ -13,7 +13,7 @@ int  ssg_window_running(void);
 float ssg_window_get_dt(void);
 void ssg_window_begin_frame(void);
 bool ssg_window_check_key(const char *key_name);
-void ssg_window_end_frame(SSG_Canvas canvas);
+void ssg_window_end_frame(SSG_Canvas canvas, size_t delay);
 
 #ifdef __cplusplus
 }
@@ -137,14 +137,14 @@ bool ssg_window_get_key_down(const char *key_name) {
     return keyboard[scancode];
 }
 
-void ssg_window_end_frame(SSG_Canvas canvas) {
-    SDL_UpdateTexture(texture, NULL,
-                      canvas.pixels,
-                      canvas.stride * sizeof(Color));
+void ssg_window_end_frame(SSG_Canvas canvas, size_t delay) {
+    SDL_UpdateTexture(texture, NULL, canvas.pixels, canvas.stride * sizeof(Color));
 
     SDL_RenderClear(renderer);
     SDL_RenderTexture(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
+
+    SDL_Delay(delay);
 }
 
 #endif // SSG_SDL_IMPLEMENTATION

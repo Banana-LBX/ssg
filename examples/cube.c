@@ -67,7 +67,7 @@ int main(void) {
 
         ssg_text(canvas, "fax\nspinning cube", 0, 770, ssg_default_font, 10, 0.5, 0.5, FOREGROUND);
 
-        ssg_window_end_frame(canvas);
+        ssg_window_end_frame(canvas, 16);
     }
 
     ssg_window_shutdown();

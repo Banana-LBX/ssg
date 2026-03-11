@@ -229,7 +229,7 @@ int main(void) {
             DrawMap2D(canvas, map, (Color){255, 255, 255, 255}, (Color){255, 255, 0, 255}, (Color){220, 0, 0, 255});
         }
 
-        ssg_window_end_frame(canvas);
+        ssg_window_end_frame(canvas, 16);
     }
 
     ssg_window_shutdown();

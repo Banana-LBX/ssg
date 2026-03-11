@@ -62,7 +62,7 @@ int main(void) {
             }
         }
 
-        ssg_window_end_frame(canvas);
+        ssg_window_end_frame(canvas, 16);
     }
 
     ssg_window_shutdown();

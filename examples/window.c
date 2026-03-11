@@ -26,7 +26,7 @@ int main(void) {
         ssg_fill(canvas, BACKGROUND);
         ssg_circle(canvas, WIDTH/2, HEIGHT/2, 200, FOREGROUND);
 
-        ssg_window_end_frame(canvas);
+        ssg_window_end_frame(canvas, 16);
     }
 
     ssg_window_shutdown();
