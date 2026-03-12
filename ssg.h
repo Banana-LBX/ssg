@@ -296,6 +296,8 @@ void ssg_circle_outline(SSG_Canvas canvas, int cx, int cy, int r, size_t thickne
 
 void ssg_text(SSG_Canvas canvas, const char *text, int x0, int y0, SSG_Font font, size_t size, float letter_spacing, float word_spacing, Color color);
 
+SSG_Canvas ssg_anti_alias(SSG_Canvas canvas, size_t chunk_size);
+
 #ifdef __cplusplus
 }
 #endif
@@ -500,12 +502,12 @@ SSG_Canvas ssg_create_subcanvas(SSG_Canvas canvas, int x, int y, int w, int h) {
     sub.pixels = &canvas.pixels[box.y1 * canvas.stride + box.x1];
     sub.width  = box.x2 - box.x1 + 1;
     sub.height = box.y2 - box.y1 + 1;
-    sub.stride = canvas.stride;   // <- keep original stride
+    sub.stride = canvas.stride;   // keep original stride
 
     return sub;
 }
 
-// downsamples the canvas
+// can only resize down
 SSG_Canvas ssg_canvas_resize(SSG_Canvas canvas, size_t new_width, size_t new_height) {
     if (!canvas.pixels || new_width == 0 || new_height == 0)
         return (SSG_Canvas){0};
@@ -519,7 +521,6 @@ SSG_Canvas ssg_canvas_resize(SSG_Canvas canvas, size_t new_width, size_t new_hei
 
     for (size_t y = 0; y < new_height; y++) {
         for (size_t x = 0; x < new_width; x++) {
-
             size_t src_x = (size_t)(x * scale_x);
             size_t src_y = (size_t)(y * scale_y);
 
@@ -612,13 +613,55 @@ void ssg_polygon(SSG_Canvas canvas, int *xs, int *ys, int count, float angle, Co
     if (angle != 0.0f)
         ssg_rotate_points(rx, ry, count, cx, cy, angle);
 
-    for(int i = 1; i < count - 1; i++) {
-        ssg_triangle(canvas,
-            xs[0], ys[0],
-            xs[i], ys[i],
-            xs[i+1], ys[i+1],
-            angle,
-            color);
+    int min_y = ry[0], max_y = ry[0];
+    for (int i = 1; i < count; i++) {
+        if (ry[i] < min_y) min_y = ry[i];
+        if (ry[i] > max_y) max_y = ry[i];
+    }
+
+    if (min_y < 0) min_y = 0;
+    if (max_y >= (int)canvas.height) max_y = canvas.height - 1;
+
+    int intersections[count];
+
+    for (int y = min_y; y <= max_y; y++) {
+        int inter_count = 0;
+
+        for (int i = 0; i < count; i++) {
+            int j = (i + 1) % count;
+
+            int x1 = rx[i], y1 = ry[i];
+            int x2 = rx[j], y2 = ry[j];
+
+            if (y1 == y2) continue;
+
+            if ((y >= y1 && y < y2) || (y >= y2 && y < y1)) {
+                float t = (float)(y - y1) / (float)(y2 - y1);
+                int x = (int)(x1 + t * (x2 - x1));
+                intersections[inter_count++] = x;
+            }
+        }
+
+        for (int i = 0; i < inter_count - 1; i++) {
+            for (int j = i + 1; j < inter_count; j++) {
+                if (intersections[i] > intersections[j]) {
+                    int tmp = intersections[i];
+                    intersections[i] = intersections[j];
+                    intersections[j] = tmp;
+                }
+            }
+        }
+
+        for (int i = 0; i < inter_count; i += 2) {
+            int x_start = intersections[i];
+            int x_end = intersections[i + 1];
+
+            if (x_start < 0) x_start = 0;
+            if (x_end >= (int)canvas.width) x_end = canvas.width - 1;
+
+            for (int x = x_start; x <= x_end; x++)
+                ssg_draw_pixel(canvas, x, y, color);
+        }
     }
 }
 
@@ -783,6 +826,50 @@ void ssg_text(SSG_Canvas canvas, const char *text, int tx, int ty, SSG_Font font
         // Move cursor to next character
         cursor_x += (font.width + letter_spacing) * size;
     }
+}
+
+// supersampling anti aliasing
+SSG_Canvas ssg_anti_alias(SSG_Canvas canvas, size_t chunk_size) {
+    size_t new_w = canvas.width / chunk_size;
+    size_t new_h = canvas.height / chunk_size;
+
+    SSG_Canvas new_canvas = ssg_create_canvas(new_w, new_h);
+
+    for(size_t cy = 0; cy < new_h; cy++) {
+        for(size_t cx = 0; cx < new_w; cx++) {
+            int total_r = 0;
+            int total_g = 0;
+            int total_b = 0;
+            int total_a = 0;
+
+            for(size_t y = 0; y < chunk_size; y++) {
+                for(size_t x = 0; x < chunk_size; x++) {
+                    size_t src_x = cx * chunk_size + x;
+                    size_t src_y = cy * chunk_size + y;
+
+                    Color p = canvas.pixels[src_y * canvas.stride + src_x];
+
+                    total_r += p.r;
+                    total_g += p.g;
+                    total_b += p.b;
+                    total_a += p.a;
+                }
+            }
+
+            int samples = chunk_size * chunk_size;
+
+            Color avg = {
+                total_r / samples,
+                total_g / samples,
+                total_b / samples,
+                total_a / samples
+            };
+
+            new_canvas.pixels[cy * new_canvas.stride + cx] = avg;
+        }
+    }
+
+    return new_canvas;
 }
 
 #endif // SSG_IMPLEMENTATION
