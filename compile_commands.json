@@ -1,0 +1,18 @@
+[
+  {
+    "file": "main.c",
+    "arguments": [
+      "gcc",
+      "main.c",
+      "-Wall",
+      "-Wextra",
+      "-std=c11",
+      "-I.",
+      "-Ibackends",
+      "-o",
+      "app"
+    ],
+    "directory": "/home/bryan/dev/C-cult/ssg",
+    "output": "app"
+  }
+]

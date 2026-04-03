@@ -1,12 +1,5 @@
 main.c
 stb_image.h
 stb_image_write.h
-app.exe
-ascii_wave.exe
-cube.exe
-image.exe
-raycast.exe
-wave.exe
-window.exe
-wiremesh.exe
+app
 TODO.txt
