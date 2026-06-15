@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "stb_truetype.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -25,257 +28,30 @@ typedef struct {
     int x2, y2;
 } SSG_Bounding_Box;
 
+#define SSG_MAX_GLYPHS 256
 typedef struct {
-    size_t width;
-    size_t height;
-    const char *symbols;
+    unsigned char *bitmap;
+
+    int width;
+    int height;
+
+    int xoff;
+    int yoff;
+
+    int advance;
+} SSG_Glyph;
+
+typedef struct {
+    stbtt_fontinfo info;
+    unsigned char *ttf_data;
+
+    float scale;
+    int ascent;
+    int descent;
+    int line_gap;
+
+    SSG_Glyph glyphs[SSG_MAX_GLYPHS];
 } SSG_Font;
-
-#define DEFAULT_FONT_HEIGHT 7
-#define DEFAULT_FONT_WIDTH 5
-static char ssg_default_font_symbols[128][DEFAULT_FONT_HEIGHT][DEFAULT_FONT_WIDTH] = {
-
-['a'] = {
-    {0,1,1,1,0},
-    {1,0,0,0,1},
-    {1,1,1,1,1},
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['b'] = {
-    {1,1,1,1,0},
-    {1,0,0,0,1},
-    {1,1,1,1,0},
-    {1,0,0,0,1},
-    {1,1,1,1,0},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['c'] = {
-    {0,1,1,1,1},
-    {1,0,0,0,0},
-    {1,0,0,0,0},
-    {1,0,0,0,0},
-    {0,1,1,1,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['d'] = {
-    {1,1,1,1,0},
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {1,1,1,1,0},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['e'] = {
-    {1,1,1,1,1},
-    {1,0,0,0,0},
-    {1,1,1,1,0},
-    {1,0,0,0,0},
-    {1,1,1,1,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['f'] = {
-    {1,1,1,1,1},
-    {1,0,0,0,0},
-    {1,1,1,1,0},
-    {1,0,0,0,0},
-    {1,0,0,0,0},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['g'] = {
-    {0,1,1,1,1},
-    {1,0,0,0,0},
-    {1,0,1,1,1},
-    {1,0,0,0,1},
-    {0,1,1,1,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['h'] = {
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {1,1,1,1,1},
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['i'] = {
-    {1,1,1,1,1},
-    {0,0,1,0,0},
-    {0,0,1,0,0},
-    {0,0,1,0,0},
-    {1,1,1,1,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['j'] = {
-    {0,0,0,1,1},
-    {0,0,0,0,1},
-    {0,0,0,0,1},
-    {1,0,0,0,1},
-    {0,1,1,1,0},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['k'] = {
-    {1,0,0,0,1},
-    {1,0,0,1,0},
-    {1,1,1,0,0},
-    {1,0,0,1,0},
-    {1,0,0,0,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['l'] = {
-    {1,0,0,0,0},
-    {1,0,0,0,0},
-    {1,0,0,0,0},
-    {1,0,0,0,0},
-    {1,1,1,1,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['m'] = {
-    {1,0,0,0,1},
-    {1,1,0,1,1},
-    {1,0,1,0,1},
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['n'] = {
-    {1,0,0,0,1},
-    {1,1,0,0,1},
-    {1,0,1,0,1},
-    {1,0,0,1,1},
-    {1,0,0,0,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['o'] = {
-    {0,1,1,1,0},
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {0,1,1,1,0},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['p'] = {
-    {1,1,1,1,0},
-    {1,0,0,0,1},
-    {1,1,1,1,0},
-    {1,0,0,0,0},
-    {1,0,0,0,0},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['q'] = {
-    {0,1,1,1,0},
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {1,0,0,1,1},
-    {0,1,1,1,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['r'] = {
-    {1,1,1,1,0},
-    {1,0,0,0,1},
-    {1,1,1,1,0},
-    {1,0,1,0,0},
-    {1,0,0,1,0},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['s'] = {
-    {0,1,1,1,1},
-    {1,0,0,0,0},
-    {0,1,1,1,0},
-    {0,0,0,0,1},
-    {1,1,1,1,0},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['t'] = {
-    {1,1,1,1,1},
-    {0,0,1,0,0},
-    {0,0,1,0,0},
-    {0,0,1,0,0},
-    {0,0,1,0,0},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['u'] = {
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {0,1,1,1,0},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['v'] = {
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {0,1,0,1,0},
-    {0,1,0,1,0},
-    {0,0,1,0,0},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['w'] = {
-    {1,0,0,0,1},
-    {1,0,0,0,1},
-    {1,0,1,0,1},
-    {1,1,0,1,1},
-    {1,0,0,0,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['x'] = {
-    {1,0,0,0,1},
-    {0,1,0,1,0},
-    {0,0,1,0,0},
-    {0,1,0,1,0},
-    {1,0,0,0,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['y'] = {
-    {1,0,0,0,1},
-    {0,1,0,1,0},
-    {0,0,1,0,0},
-    {0,0,1,0,0},
-    {0,0,1,0,0},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-['z'] = {
-    {1,1,1,1,1},
-    {0,0,0,1,0},
-    {0,0,1,0,0},
-    {0,1,0,0,0},
-    {1,1,1,1,1},
-    {0,0,0,0,0},
-    {0,0,0,0,0},
-},
-};
-
-static const SSG_Font ssg_default_font = {
-    DEFAULT_FONT_WIDTH,
-    DEFAULT_FONT_HEIGHT,
-    &ssg_default_font_symbols[0][0][0]
-};
 
 SSG_Canvas ssg_create_canvas(size_t width, size_t height);
 SSG_Canvas ssg_create_subcanvas(SSG_Canvas canvas, int x, int y, int w, int h);
@@ -294,7 +70,10 @@ void ssg_rect_outline(SSG_Canvas canvas, int x, int y, int width, int height, fl
 void ssg_circle(SSG_Canvas canvas, int cx, int cy, int r, Color color);
 void ssg_circle_outline(SSG_Canvas canvas, int cx, int cy, int r, size_t thickness, Color color);
 
-void ssg_text(SSG_Canvas canvas, const char *text, int x0, int y0, SSG_Font font, size_t size, float letter_spacing, float word_spacing, Color color);
+SSG_Font ssg_load_font(const char *filename, float pixel_height);
+void ssg_build_glyph_cache(SSG_Font *font);
+void ssg_free_font(SSG_Font *font);
+void ssg_text(SSG_Canvas canvas, const char *text, int x, int y, SSG_Font font, size_t size, Color color);
 
 SSG_Canvas ssg_anti_alias(SSG_Canvas canvas, size_t chunk_size);
 
@@ -304,9 +83,10 @@ SSG_Canvas ssg_anti_alias(SSG_Canvas canvas, size_t chunk_size);
 
 #ifdef SSG_IMPLEMENTATION
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <stdlib.h>
 
 /* ===== Helper functions ===== */
 #define SWAP(T, a, b) do { T t = a; a = b; b = t; } while (0)
@@ -787,44 +567,148 @@ void ssg_line(SSG_Canvas canvas, int x1, int y1, int x2, int y2, size_t thicknes
     }
 }
 
-void ssg_text(SSG_Canvas canvas, const char *text, int tx, int ty, SSG_Font font, size_t size, float letter_spacing, float word_spacing, Color color) {
-    if(size == 0) return;
+SSG_Font ssg_load_font(const char *filename, float pixel_height) {
+    SSG_Font font = {0};
 
-    int cursor_x = tx;
-    int cursor_y = ty;
+    FILE *f = fopen(filename, "rb");
 
-    size_t text_len = strlen(text);
+    fseek(f, 0, SEEK_END);
+    long size = ftell(f);
+    rewind(f);
 
-    for(size_t i = 0; i < text_len; i++) {
-        char c = text[i];
+    font.ttf_data = malloc(size);
+
+    fread(font.ttf_data, 1, size, f);
+    fclose(f);
+
+    stbtt_InitFont(
+        &font.info,
+        font.ttf_data,
+        stbtt_GetFontOffsetForIndex(font.ttf_data, 0)
+    );
+
+    font.scale =
+        stbtt_ScaleForPixelHeight(
+            &font.info,
+            pixel_height
+        );
+
+    stbtt_GetFontVMetrics(
+        &font.info,
+        &font.ascent,
+        &font.descent,
+        &font.line_gap
+    );
+
+    return font;
+}
+
+void ssg_build_glyph_cache(SSG_Font *font) {
+    for(int c = 0; c < 256; c++) {
+        SSG_Glyph *g = &font->glyphs[c];
+
+        int advance;
+        int lsb;
+
+        stbtt_GetCodepointHMetrics(
+            &font->info,
+            c,
+            &advance,
+            &lsb
+        );
+
+        g->advance =
+            (int)(advance * font->scale);
+
+        g->bitmap =
+            stbtt_GetCodepointBitmap(
+                &font->info,
+                0,
+                font->scale,
+                c,
+                &g->width,
+                &g->height,
+                &g->xoff,
+                &g->yoff
+            );
+    }
+}
+
+void ssg_free_font(SSG_Font *font) {
+    for(int i = 0; i < 256; i++) {
+        if(font->glyphs[i].bitmap) {
+            stbtt_FreeBitmap(
+                font->glyphs[i].bitmap,
+                NULL
+            );
+        }
+    }
+
+    free(font->ttf_data);
+}
+
+static void ssg_draw_glyph(SSG_Canvas canvas, int x, int y, SSG_Glyph *glyph, Color color ) {
+    for(int gy = 0; gy < glyph->height; gy++) {
+        for(int gx = 0; gx < glyph->width; gx++) {
+            unsigned char alpha =
+                glyph->bitmap[
+                    gy * glyph->width + gx
+                ];
+
+            if(alpha == 0)
+                continue;
+
+            Color c = color;
+            c.a = alpha;
+
+            ssg_draw_pixel(
+                canvas,
+                x + gx,
+                y + gy,
+                c
+            );
+        }
+    }
+}
+
+void ssg_text(SSG_Canvas canvas, const char *text, int x, int y, SSG_Font font, size_t size, Color color) {
+    (void)size;
+
+    int pen_x = x;
+
+    int baseline =
+        y +
+        (int)(font.ascent * font.scale);
+
+    while(*text) {
+        unsigned char c = *text++;
 
         if(c == '\n') {
-            cursor_x = tx;
-            cursor_y += (font.height) * size;
+            pen_x = x;
+
+            baseline +=
+                (int)(
+                    (font.ascent -
+                     font.descent +
+                     font.line_gap)
+                    * font.scale
+                );
+
             continue;
         }
 
-        // word spacing
-        if(c == ' ') {
-            cursor_x += word_spacing * size;
-            continue;
-        }
+        SSG_Glyph *g =
+            &font.glyphs[c];
 
-        const char *symbol = font.symbols + ((unsigned char)c * font.width * font.height);
+        ssg_draw_glyph(
+            canvas,
+            pen_x + g->xoff,
+            baseline + g->yoff,
+            g,
+            color
+        );
 
-        for(int dy = 0; dy < (int)font.height; dy++) {
-            for(int dx = 0; dx < (int)font.width; dx++) {
-                if(symbol[dy * font.width + dx]) {
-                    int px = cursor_x + dx * size;
-                    int py = cursor_y + dy * size;
-
-                    ssg_rect(canvas, px, py, size, size, 0, color);
-                }
-            }
-        }
-
-        // Move cursor to next character
-        cursor_x += (font.width + letter_spacing) * size;
+        pen_x += g->advance;
     }
 }
 

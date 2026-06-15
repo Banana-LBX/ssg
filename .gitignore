@@ -2,4 +2,4 @@ main.c
 stb_image.h
 stb_image_write.h
 app
-TODO.txt
+compile_flags.txt
