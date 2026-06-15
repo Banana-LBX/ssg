@@ -1,5 +1,3 @@
 main.c
-stb_image.h
-stb_image_write.h
 app
 compile_flags.txt
